@@ -1,0 +1,79 @@
+package info.note.app.settings.qr
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import info.note.app.usecase.DisconnectSyncUseCase
+import info.note.app.usecase.FetchDeviceIpUseCase
+import info.note.app.usecase.FetchSyncKeyUseCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class ShowSyncQrViewModel(
+    private val fetchSyncKeyUseCase: FetchSyncKeyUseCase,
+    private val fetchDeviceIpUseCase: FetchDeviceIpUseCase,
+    private val disconnectSyncUseCase: DisconnectSyncUseCase
+) : ViewModel() {
+
+    sealed class ShowSyncQrEvent {
+        data object DisconnectEvent : ShowSyncQrEvent()
+    }
+
+    sealed class ShowSyncQrEffect {
+        data class ShowError(val message: String) : ShowSyncQrEffect()
+    }
+
+    data class ShowSyncQrState(
+        val isLoading: Boolean = true,
+        val isAlreadySyncing: Boolean = false,
+        val deviceIp: String = ""
+    )
+
+    private val _state = MutableStateFlow(ShowSyncQrState())
+    val state = _state.onStart {
+        viewModelScope.launch {
+            if (!checkSyncKey()) {
+                fetchDeviceIp()
+            } else {
+                _state.update { it.copy(isLoading = false, isAlreadySyncing = true) }
+            }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        initialValue = ShowSyncQrState(),
+        started = SharingStarted.WhileSubscribed(5000L)
+    )
+
+    private val _effect = Channel<ShowSyncQrEffect>(Channel.CONFLATED)
+    val effect = _effect.receiveAsFlow()
+
+    fun onEvent(event: ShowSyncQrEvent) {
+        viewModelScope.launch {
+            when (event) {
+                ShowSyncQrEvent.DisconnectEvent -> {
+                    disconnectSyncUseCase()
+                    _effect.send(ShowSyncQrEffect.ShowError("Disconnected successfully!"))
+                    _state.update { it.copy(isLoading = true, isAlreadySyncing = false) }
+                    fetchDeviceIp()
+                }
+            }
+        }
+    }
+
+    private suspend fun checkSyncKey(): Boolean = fetchSyncKeyUseCase().isNotEmpty()
+
+    private suspend fun fetchDeviceIp() = withContext(Dispatchers.IO) {
+        fetchDeviceIpUseCase().onSuccess { deviceIp ->
+            _state.update { it.copy(isLoading = false, deviceIp = deviceIp) }
+        }.onFailure {
+            _effect.send(ShowSyncQrEffect.ShowError("Cannot create QR code!"))
+        }
+    }
+}
