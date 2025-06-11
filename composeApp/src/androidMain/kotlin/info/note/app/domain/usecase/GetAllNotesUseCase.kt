@@ -1,0 +1,13 @@
+package info.note.app.domain.usecase
+
+import info.note.app.domain.model.Note
+import info.note.app.domain.repository.note.NoteRepository
+import info.note.app.domain.repository.note.db.toNote
+
+class GetAllNotesUseCase(
+    private val noteRepository: NoteRepository
+) {
+
+    suspend operator fun invoke(): List<Note> =
+        noteRepository.getAllNotes().map { it.toNote() }
+}

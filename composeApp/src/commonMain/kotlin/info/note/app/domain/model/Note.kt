@@ -1,6 +1,6 @@
 package info.note.app.domain.model
 
-import info.note.app.domain.repository.db.NoteEntity
+import info.note.app.domain.repository.note.db.NoteEntity
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,7 +10,8 @@ data class Note(
     val title: String,
     val message: String,
     val dueDate: Long = 0L,
-    val isImportant: Boolean = false
+    val isImportant: Boolean = false,
+    val imageId: String = ""
 )
 
 fun Note.toNoteEntity(): NoteEntity =
@@ -20,5 +21,6 @@ fun Note.toNoteEntity(): NoteEntity =
         creationTime = creationTime,
         message = message,
         dueDate = dueDate,
-        isImportant = isImportant
+        isImportant = isImportant,
+        imageId = imageId
     )

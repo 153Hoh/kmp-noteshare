@@ -3,12 +3,12 @@ package info.note.app.db
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import info.note.app.domain.repository.db.DatabaseBuilder
-import info.note.app.domain.repository.db.NoteDatabase
+import info.note.app.domain.repository.note.db.DatabaseBuilder
+import info.note.app.domain.repository.note.db.NoteDatabase
 
 class RoomDatabaseBuilder(
     private val context: Context
-):DatabaseBuilder {
+): DatabaseBuilder {
 
     override fun getDatabaseBuilder(): RoomDatabase.Builder<NoteDatabase> {
         val dbFile = context.applicationContext.getDatabasePath("my_room.db")

@@ -19,10 +19,12 @@ import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -156,6 +158,56 @@ fun AlreadySyncingCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ConfirmationDialog(
+    modifier: Modifier = Modifier,
+    title: String,
+    message: String,
+    onConfirmClicked: () -> Unit = {},
+    onClose: () -> Unit = {}
+) {
+    Card(modifier = modifier.padding(16.dp), elevation = CardDefaults.elevatedCardElevation()) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth(),
+                text = title
+            )
+            HorizontalDivider()
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                text = message,
+                textAlign = TextAlign.Center
+            )
+            Row {
+                TextButton(onClose) {
+                    Text("Close")
+                }
+                TextButton(onConfirmClicked) {
+                    Text("Confirm")
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun ConfirmationDialogPreview() {
+    MaterialTheme {
+        ConfirmationDialog(
+            title = "Disable note sync",
+            message = "Are you sure you want to disable syncing?"
+        )
     }
 }
 

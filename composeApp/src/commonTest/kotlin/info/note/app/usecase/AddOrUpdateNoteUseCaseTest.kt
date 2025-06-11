@@ -1,7 +1,8 @@
 package info.note.app.usecase
 
 import info.note.app.createNoteEntity
-import info.note.app.domain.repository.NoteRepository
+import info.note.app.domain.repository.file.FileRepository
+import info.note.app.domain.repository.note.NoteRepository
 import info.note.app.domain.usecase.AddOrUpdateNoteUseCase
 import io.kotest.core.spec.style.StringSpec
 import io.mockk.coEvery
@@ -17,6 +18,7 @@ import java.util.UUID
 class AddOrUpdateNoteUseCaseTest : StringSpec({
 
     val noteRepository: NoteRepository = mockk()
+    val fileRepository: FileRepository = mockk()
 
     lateinit var sut: AddOrUpdateNoteUseCase
 
@@ -26,7 +28,7 @@ class AddOrUpdateNoteUseCaseTest : StringSpec({
 
         every { UUID.randomUUID().toString() } returns "random"
 
-        sut = AddOrUpdateNoteUseCase(noteRepository)
+        sut = AddOrUpdateNoteUseCase(noteRepository, fileRepository)
 
         coEvery { noteRepository.addNote(any()) } returns Result.success(Unit)
     }

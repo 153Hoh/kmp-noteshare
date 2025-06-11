@@ -2,10 +2,7 @@ package info.note.app.ui.add
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,15 +11,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
@@ -30,6 +33,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerState
@@ -53,8 +57,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
+import info.note.app.noteShareEnterTransition
+import info.note.app.noteShareExitTransition
 import info.note.app.toDateString
 import info.note.app.toTimeString
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -67,8 +75,17 @@ fun AddOrUpdateNoteScreenContent(
     onMessageUpdate: (String) -> Unit = {},
     onImportantClicked: () -> Unit = {},
     onAddNoteClicked: () -> Unit = {},
-    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> }
+    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> },
+    isGalleryAvailable: Boolean = true,
+    isCameraAvailable: Boolean = true,
+    onAddFromGalleryClicked: () -> Unit = {},
+    onAddFromCameraClicked: () -> Unit = {},
+    onRemoveImageClicked: () -> Unit = {},
+    onSetImageClicked: () -> Unit = {},
+    onImageClicked: () -> Unit = {},
+    onCloseHighLightClicked: () -> Unit = {}
 ) {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,20 +97,38 @@ fun AddOrUpdateNoteScreenContent(
             scrollState.animateScrollTo(scrollState.maxValue)
         }
 
-        Column(
-            modifier = Modifier.verticalScroll(scrollState).padding(bottom = 72.dp)
-        ) {
-            NoteCard(
-                state = state,
-                onTitleUpdated = onTitleUpdated,
-                onMessageUpdate = onMessageUpdate
-            )
-            TimeCard(
-                hour = state.hour,
-                minute = state.minute,
-                dateInMillis = state.dateInMillis,
-                onSetTimeClicked = onSetTimeClicked
-            )
+        Box {
+            Column(
+                modifier = Modifier.verticalScroll(scrollState).padding(bottom = 72.dp)
+            ) {
+                NoteCard(
+                    state = state,
+                    onTitleUpdated = onTitleUpdated,
+                    onMessageUpdate = onMessageUpdate
+                )
+                TimeCard(
+                    hour = state.hour,
+                    minute = state.minute,
+                    dateInMillis = state.dateInMillis,
+                    onSetTimeClicked = onSetTimeClicked
+                )
+                AddImageCard(
+                    image = state.image?.bitmap ?: state.tempImage?.bitmap,
+                    isGalleryAvailable = isGalleryAvailable,
+                    isCameraAvailable = isCameraAvailable,
+                    onAddFromGalleryClicked = onAddFromGalleryClicked,
+                    onAddFromCameraClicked = onAddFromCameraClicked,
+                    onRemoveImageClicked = onRemoveImageClicked,
+                    onSetImageClicked = onSetImageClicked,
+                    onImageClicked = onImageClicked
+                )
+            }
+            if (state.highlightImage) {
+                ImageHighLightBox(
+                    image = state.image?.bitmap ?: state.tempImage?.bitmap,
+                    onCloseHighLightClicked = onCloseHighLightClicked
+                )
+            }
         }
         BottomRow(
             modifier = Modifier.fillMaxWidth()
@@ -104,6 +139,217 @@ fun AddOrUpdateNoteScreenContent(
             onAddNoteClicked = onAddNoteClicked,
             onImportantClicked = onImportantClicked
         )
+
+        if (state.isLoading) {
+            LoadingBox()
+        }
+    }
+}
+
+@Composable
+fun LoadingBox() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.4f)),
+    ) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+            Text(text = "Loading note details...", color = Color.White)
+        }
+    }
+}
+
+@Composable
+fun ImageHighLightBox(
+    image: ImageBitmap? = null,
+    onCloseHighLightClicked: () -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 72.dp)
+            .background(Color.Black.copy(alpha = 0.4f)),
+    ) {
+        if (image != null) {
+            Image(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .align(Alignment.Center),
+                bitmap = image,
+                contentDescription = "",
+            )
+        } else {
+            Text(modifier = Modifier.align(Alignment.Center), text = "Image not available!")
+        }
+        Icon(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+                .clickable { onCloseHighLightClicked() },
+            imageVector = Icons.Filled.Close,
+            tint = Color.White,
+            contentDescription = ""
+        )
+    }
+}
+
+@Composable
+fun AddImageCard(
+    image: ImageBitmap? = null,
+    isGalleryAvailable: Boolean = true,
+    isCameraAvailable: Boolean = true,
+    onAddFromGalleryClicked: () -> Unit = {},
+    onAddFromCameraClicked: () -> Unit = {},
+    onRemoveImageClicked: () -> Unit = {},
+    onSetImageClicked: () -> Unit = {},
+    onImageClicked: () -> Unit = {}
+) {
+    val isImageCardExpanded = remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+            .clickable {
+                if (!isImageCardExpanded.value) {
+                    isImageCardExpanded.value = !isImageCardExpanded.value
+                }
+            }
+            .padding(start = 12.dp, top = 12.dp, end = 12.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AnimatedVisibility(
+                visible = !isImageCardExpanded.value,
+                enter = noteShareEnterTransition(),
+                exit = noteShareExitTransition()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (image == null) {
+                        Icon(imageVector = Icons.Filled.Image, contentDescription = "")
+                        Text(
+                            modifier = Modifier.padding(8.dp),
+                            text = "Add Image"
+                        )
+                    } else {
+                        Icon(
+                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                            imageVector = Icons.Filled.Done,
+                            tint = Color.Green,
+                            contentDescription = ""
+                        )
+                        Text(
+                            modifier = Modifier.padding(8.dp),
+                            text = "Image"
+                        )
+                    }
+                }
+            }
+
+            AnimatedVisibility(
+                visible = isImageCardExpanded.value,
+                enter = noteShareEnterTransition(),
+                exit = noteShareExitTransition()
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        modifier = Modifier.padding(8.dp),
+                        text = if (image != null) "Image" else "Add Image"
+                    )
+
+                    if (image != null) {
+                        Box {
+                            Image(
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(150.dp)
+                                    .padding(16.dp)
+                                    .clickable { onImageClicked() }
+                                    .clip(RoundedCornerShape(5.dp)),
+                                bitmap = image,
+                                contentDescription = "",
+                            )
+                            Icon(
+                                modifier = Modifier.align(Alignment.TopEnd)
+                                    .clickable { onRemoveImageClicked() },
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = ""
+                            )
+                        }
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            if (!isCameraAvailable && !isGalleryAvailable) {
+                                Text("Sorry you cannot add pictures")
+                            }
+
+                            if (isGalleryAvailable) {
+                                Card(
+                                    modifier = Modifier
+                                        .width(150.dp)
+                                        .height(150.dp)
+                                        .padding(16.dp)
+                                        .clickable { onAddFromGalleryClicked() },
+                                    elevation = CardDefaults.elevatedCardElevation()
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.fillMaxSize(),
+                                        imageVector = Icons.Filled.PhotoLibrary,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                            if (isCameraAvailable) {
+                                Card(
+                                    modifier = Modifier
+                                        .width(150.dp)
+                                        .height(150.dp)
+                                        .padding(16.dp)
+                                        .clickable { onAddFromCameraClicked() },
+                                    elevation = CardDefaults.elevatedCardElevation()
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.fillMaxSize(),
+                                        imageVector = Icons.Filled.Camera,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    CardBottomButtonRow(
+                        setEnabled = image != null,
+                        onCloseClicked = {
+                            isImageCardExpanded.value = !isImageCardExpanded.value
+                        },
+                        onSetClicked = {
+                            onSetImageClicked()
+                            isImageCardExpanded.value = false
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -126,7 +372,7 @@ fun TimeCard(
                     isTimeCardExpanded.value = !isTimeCardExpanded.value
                 }
             }
-            .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+            .padding(start = 12.dp, top = 12.dp, end = 12.dp)
     ) {
         Column(
             modifier = Modifier
@@ -176,8 +422,8 @@ fun ExpandableTimePickerWithDatePicker(
 
     AnimatedVisibility(
         visible = !isExpanded.value,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
+        enter = noteShareEnterTransition(),
+        exit = noteShareExitTransition()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (hour != null && minute != null) {
@@ -213,8 +459,8 @@ fun ExpandableTimePickerWithDatePicker(
 
     AnimatedVisibility(
         visible = isExpanded.value,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
+        enter = noteShareEnterTransition(),
+        exit = noteShareExitTransition()
     ) {
 
         LaunchedEffect(datePickerState.selectedDateMillis) {
@@ -240,40 +486,22 @@ fun ExpandableTimePickerWithDatePicker(
                 datePickerState = datePickerState
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp, end = 4.dp),
-                    onClick = {
-                        if (isExpanded.value) {
-                            isExpanded.value = !isExpanded.value
-                        }
-                    }
-                ) {
-                    Text("Cancel")
-                }
-                Button(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp, end = 4.dp),
-                    onClick = {
-                        onSetTimeClicked(
-                            timePickerState.hour,
-                            timePickerState.minute,
-                            datePickerState.selectedDateMillis ?: dateInMillis
-                            ?: currentTimeCalendar.timeInMillis
-                        )
+            CardBottomButtonRow(
+                onCloseClicked = {
+                    if (isExpanded.value) {
                         isExpanded.value = !isExpanded.value
-                    },
-                ) {
-                    Text("Set")
+                    }
+                },
+                onSetClicked = {
+                    onSetTimeClicked(
+                        timePickerState.hour,
+                        timePickerState.minute,
+                        datePickerState.selectedDateMillis ?: dateInMillis
+                        ?: currentTimeCalendar.timeInMillis
+                    )
+                    isExpanded.value = !isExpanded.value
                 }
-            }
+            )
         }
     }
 }
@@ -288,8 +516,8 @@ fun ExpandableDatePicker(
 ) {
     AnimatedVisibility(
         visible = !isExpanded.value,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
+        enter = noteShareEnterTransition(),
+        exit = noteShareExitTransition()
     ) {
         Row(modifier = Modifier.clickable {
             isExpanded.value = !isExpanded.value
@@ -310,8 +538,8 @@ fun ExpandableDatePicker(
 
     AnimatedVisibility(
         visible = isExpanded.value,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
+        enter = noteShareEnterTransition(),
+        exit = noteShareExitTransition()
     ) {
         Box {
             DatePicker(
@@ -326,6 +554,37 @@ fun ExpandableDatePicker(
             ) {
                 Icon(imageVector = Icons.Filled.Close, contentDescription = "")
             }
+        }
+    }
+}
+
+@Composable
+fun CardBottomButtonRow(
+    setEnabled: Boolean = true,
+    onCloseClicked: () -> Unit = {},
+    onSetClicked: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 4.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Button(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 4.dp, end = 4.dp),
+            onClick = onCloseClicked
+        ) {
+            Text("Close")
+        }
+        Button(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 4.dp, end = 4.dp),
+            onClick = onSetClicked,
+            enabled = setEnabled
+        ) {
+            Text("Set")
         }
     }
 }

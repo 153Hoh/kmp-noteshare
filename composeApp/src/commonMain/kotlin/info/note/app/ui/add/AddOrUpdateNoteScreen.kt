@@ -10,6 +10,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddOrUpdateNoteScreen(
     viewModel: AddOrUpdateNoteScreenViewModel = koinViewModel(),
     onNavigateBack: () -> Unit,
+    onNavigateToPermissionScreen: () -> Unit,
     onShowSnackBar: (String) -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
@@ -20,6 +21,7 @@ fun AddOrUpdateNoteScreen(
             when (it) {
                 AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.NavigateBack -> onNavigateBack()
                 is AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.ShowError -> onShowSnackBar(it.message)
+                AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.PermissionRequired -> onNavigateToPermissionScreen()
             }
         }
     }
@@ -54,6 +56,26 @@ fun AddOrUpdateNoteScreen(
                     date
                 )
             )
+        },
+        isCameraAvailable = viewModel.isCameraAvailable(),
+        isGalleryAvailable = viewModel.isGalleryAvailable(),
+        onAddFromGalleryClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddImageFromGalleryClicked)
+        },
+        onAddFromCameraClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddImageFromCameraClicked)
+        },
+        onSetImageClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.SetImageEvent)
+        },
+        onRemoveImageClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.RemoveImage)
+        },
+        onImageClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.ImageClicked)
+        },
+        onCloseHighLightClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.CloseImageHighlight)
         }
     )
 }

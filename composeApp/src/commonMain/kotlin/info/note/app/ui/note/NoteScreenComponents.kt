@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -45,13 +47,29 @@ fun Note(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (note.isImportant) {
-                Icon(
-                    modifier = Modifier.padding(start = 8.dp),
-                    tint = Color.Yellow,
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = ""
-                )
+            Column {
+                if (note.isImportant) {
+                    Icon(
+                        modifier = Modifier.padding(top = 2.dp, start = 8.dp),
+                        tint = Color.Yellow,
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = ""
+                    )
+                }
+                if (note.imageId.isNotEmpty()) {
+                    Icon(
+                        modifier = Modifier.padding(top = 2.dp, start = 8.dp),
+                        imageVector = Icons.Filled.Image,
+                        contentDescription = ""
+                    )
+                }
+                if (note.dueDate != 0L) {
+                    Icon(
+                        modifier = Modifier.padding(top = 2.dp, start = 8.dp, bottom = 2.dp),
+                        imageVector = Icons.Filled.Schedule,
+                        contentDescription = ""
+                    )
+                }
             }
             Column(
                 modifier = Modifier
@@ -128,6 +146,21 @@ fun NoteListPreview() {
                     message = "Valami das message",
                     creationTime = System.currentTimeMillis(),
                     isImportant = true
+                ),
+                Note(
+                    title = "DAS",
+                    message = "Valami das message",
+                    creationTime = System.currentTimeMillis(),
+                    isImportant = true,
+                    imageId = "asd"
+                ),
+                Note(
+                    title = "DAS",
+                    message = "Valami das message",
+                    creationTime = System.currentTimeMillis(),
+                    isImportant = true,
+                    imageId = "asd",
+                    dueDate = System.currentTimeMillis()
                 )
             )
         )

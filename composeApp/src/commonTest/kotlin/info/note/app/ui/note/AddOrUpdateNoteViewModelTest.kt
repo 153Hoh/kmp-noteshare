@@ -8,7 +8,12 @@ import info.note.app.MainCoroutineListener
 import info.note.app.NoteScreens
 import info.note.app.createNote
 import info.note.app.domain.usecase.AddOrUpdateNoteUseCase
+import info.note.app.domain.usecase.FetchImageFromCameraUseCase
+import info.note.app.domain.usecase.FetchImageFromGalleryUseCase
+import info.note.app.domain.usecase.FetchImageFromStorageUseCase
 import info.note.app.domain.usecase.FetchNoteDetailsUseCase
+import info.note.app.domain.usecase.IsCameraImageAvailableUseCase
+import info.note.app.domain.usecase.IsGalleryImageAvailableUseCase
 import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel
 import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect
 import io.kotest.core.listeners.TestListener
@@ -24,6 +29,11 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
     val addOrUpdateNoteUseCase: AddOrUpdateNoteUseCase = mockk()
     val fetchNoteDetailsUseCase: FetchNoteDetailsUseCase = mockk()
+    val isCameraImageAvailableUseCase: IsCameraImageAvailableUseCase = mockk()
+    val isGalleryImageAvailableUseCase: IsGalleryImageAvailableUseCase = mockk()
+    val fetchImageFromGalleryUseCase: FetchImageFromGalleryUseCase = mockk()
+    val fetchImageFromCameraUseCase: FetchImageFromCameraUseCase = mockk()
+    val fetchImageFromStorageUseCase: FetchImageFromStorageUseCase = mockk()
 
     lateinit var sut: AddOrUpdateNoteScreenViewModel
 
@@ -31,7 +41,12 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
         sut = AddOrUpdateNoteScreenViewModel(
             savedStateHandle,
             addOrUpdateNoteUseCase,
-            fetchNoteDetailsUseCase
+            fetchNoteDetailsUseCase,
+            isCameraImageAvailableUseCase,
+            isGalleryImageAvailableUseCase,
+            fetchImageFromGalleryUseCase,
+            fetchImageFromCameraUseCase,
+            fetchImageFromStorageUseCase
         )
     }
 
@@ -86,7 +101,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
                     title = "title",
                     message = "",
                     creationTime = any(),
-                    isImportant = false
+                    isImportant = false,
                 )
             } returns Result.success(Unit)
 

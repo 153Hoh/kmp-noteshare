@@ -9,11 +9,14 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun App(
     modifier: Modifier = Modifier,
-    settingsContent: @Composable () -> Unit = {}
+    settingsContent: @Composable () -> Unit = {},
+    permissionScreen: @Composable (onConfirmClicked: () -> Unit) -> Unit = {}
 ) {
     MaterialTheme {
         NoteApp(
-            settingsContent = settingsContent
+            modifier = modifier,
+            settingsContent = settingsContent,
+            permissionScreen = permissionScreen
         )
     }
 }

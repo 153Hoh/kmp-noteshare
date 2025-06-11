@@ -1,6 +1,6 @@
 package info.note.app.usecase
 
-import info.note.app.domain.repository.NoteRepository
+import info.note.app.domain.repository.note.NoteRepository
 import info.note.app.domain.usecase.RemoveNoteUseCase
 import io.kotest.core.spec.style.StringSpec
 import io.mockk.coEvery

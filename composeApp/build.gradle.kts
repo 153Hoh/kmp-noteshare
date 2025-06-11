@@ -45,7 +45,9 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
-
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -73,6 +75,9 @@ kotlin {
             implementation(libs.sqlite.bundled)
             implementation(libs.kotlinx.serialization.json)
             api(libs.logging)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -96,6 +101,10 @@ kotlin {
             implementation(libs.ktor.server.cio)
             implementation(libs.ktor.server.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.server.partial.content)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
         }
     }
 }

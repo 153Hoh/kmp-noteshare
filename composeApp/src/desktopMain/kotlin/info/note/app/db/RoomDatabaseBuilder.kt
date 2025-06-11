@@ -2,8 +2,8 @@ package info.note.app.db
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import info.note.app.domain.repository.db.DatabaseBuilder
-import info.note.app.domain.repository.db.NoteDatabase
+import info.note.app.domain.repository.note.db.DatabaseBuilder
+import info.note.app.domain.repository.note.db.NoteDatabase
 import java.io.File
 
 class RoomDatabaseBuilder: DatabaseBuilder {

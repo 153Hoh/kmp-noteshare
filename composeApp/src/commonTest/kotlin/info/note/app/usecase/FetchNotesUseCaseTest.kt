@@ -3,7 +3,7 @@ package info.note.app.usecase
 import app.cash.turbine.test
 import app.cash.turbine.turbineScope
 import info.note.app.createNoteEntity
-import info.note.app.domain.repository.NoteRepository
+import info.note.app.domain.repository.note.NoteRepository
 import info.note.app.domain.usecase.FetchNotesUseCase
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

@@ -1,7 +1,7 @@
 package info.note.app
 
 import info.note.app.domain.model.Note
-import info.note.app.domain.repository.db.NoteEntity
+import info.note.app.domain.repository.note.db.NoteEntity
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
 import io.kotest.core.test.TestCase

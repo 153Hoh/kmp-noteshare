@@ -1,12 +1,16 @@
 package info.note.app.domain.usecase
 
-import info.note.app.domain.repository.NoteRepository
-import info.note.app.domain.repository.db.NoteEntity
+import info.note.app.domain.repository.file.FileRepository
+import info.note.app.domain.repository.file.exception.FileSaveException
+import info.note.app.domain.repository.image.ImageResult
+import info.note.app.domain.repository.note.NoteRepository
+import info.note.app.domain.repository.note.db.NoteEntity
 import java.util.Calendar
 import java.util.UUID
 
 class AddOrUpdateNoteUseCase(
-    private val noteRepository: NoteRepository
+    private val noteRepository: NoteRepository,
+    private val fileRepository: FileRepository
 ) {
 
     suspend operator fun invoke(
@@ -14,9 +18,10 @@ class AddOrUpdateNoteUseCase(
         title: String,
         message: String,
         isImportant: Boolean,
-        hour: Int?,
-        minute: Int?,
-        dateInMillis: Long?,
+        hour: Int? = null,
+        minute: Int? = null,
+        dateInMillis: Long? = null,
+        image: ImageResult? = null,
         creationTime: Long = System.currentTimeMillis()
     ): Result<Unit> {
         val id = noteId ?: UUID.randomUUID().toString()
@@ -31,6 +36,13 @@ class AddOrUpdateNoteUseCase(
             0L
         }
 
+        if (image != null) {
+            fileRepository.cacheImageFile(image.path, image.fileId)
+                .onFailure { it.printStackTrace() }.getOrElse {
+                return Result.failure(FileSaveException())
+            }
+        }
+
         val note =
             NoteEntity(
                 noteId = id,
@@ -38,8 +50,9 @@ class AddOrUpdateNoteUseCase(
                 creationTime = creationTime,
                 message = message,
                 dueDate = dueDate,
-                isImportant = isImportant
+                isImportant = isImportant,
+                imageId = image?.fileId ?: ""
             )
-        return noteRepository.addNote(note)
+        return noteRepository.addNote(note).onFailure { it.printStackTrace() }
     }
 }

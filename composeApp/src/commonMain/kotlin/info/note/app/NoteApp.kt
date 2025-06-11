@@ -45,6 +45,9 @@ sealed class NoteScreens {
 
     @Serializable
     data object Settings : NoteScreens()
+
+    @Serializable
+    data object PermissionScreen : NoteScreens()
 }
 
 @Composable
@@ -52,7 +55,8 @@ fun NoteApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     viewModel: NoteAppViewModel = koinViewModel(),
-    settingsContent: @Composable () -> Unit = {}
+    settingsContent: @Composable () -> Unit = {},
+    permissionScreen: @Composable (onConfirmClicked: () -> Unit) -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val effect = rememberFlowWithLifecycle(viewModel.effect)
@@ -112,7 +116,8 @@ fun NoteApp(
                     onNavigateBack = { navController.navigate(NoteScreens.NoteScreen) },
                     onShowSnackBar = {
                         viewModel.onEvent(NoteAppViewModel.NoteAppEvent.ShowSnackBar(it))
-                    }
+                    },
+                    onNavigateToPermissionScreen = { navController.navigate(NoteScreens.PermissionScreen) }
                 )
             }
             composable<NoteScreens.Settings> {
@@ -123,6 +128,15 @@ fun NoteApp(
                     )
                 )
                 Settings(content = settingsContent)
+            }
+            composable<NoteScreens.PermissionScreen> {
+                viewModel.onEvent(
+                    NoteAppViewModel.NoteAppEvent.UpdateTopBar(
+                        title = "",
+                        isOnHomeScreen = false
+                    )
+                )
+                permissionScreen { navController.navigateUp() }
             }
         }
     }

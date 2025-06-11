@@ -6,9 +6,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import info.note.app.di.coreModule
-import info.note.app.usecase.SetLastSyncStateUseCase
-import info.note.app.server.SyncServer
-import info.note.app.settings.SettingsScreen
+import info.note.app.domain.usecase.SetLastSyncStateUseCase
+import info.note.app.server.SyncServerController
+import info.note.app.ui.settings.SettingsScreen
+import io.github.vinceglb.filekit.FileKit
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
 
@@ -17,7 +18,9 @@ fun main() = application {
         modules(coreModule)
     }
 
-    val server: SyncServer by inject(SyncServer::class.java)
+    FileKit.init(appId = "NoteShare")
+
+    val server: SyncServerController by inject(SyncServerController::class.java)
 
     server.start()
 
