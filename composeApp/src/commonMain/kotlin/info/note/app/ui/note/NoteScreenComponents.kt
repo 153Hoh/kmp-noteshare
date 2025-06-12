@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import info.note.app.domain.model.Note
+import info.note.app.feature.note.model.Note
 import info.note.app.toTimeString
 import org.jetbrains.compose.ui.tooling.preview.Preview
 

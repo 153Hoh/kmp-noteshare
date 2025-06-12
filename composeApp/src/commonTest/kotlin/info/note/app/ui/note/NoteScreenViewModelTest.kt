@@ -3,8 +3,8 @@ package info.note.app.ui.note
 import app.cash.turbine.test
 import app.cash.turbine.turbineScope
 import info.note.app.createNote
-import info.note.app.domain.usecase.FetchNotesUseCase
-import info.note.app.domain.usecase.RemoveNoteUseCase
+import info.note.app.feature.note.usecase.FetchNotesUseCase
+import info.note.app.feature.note.usecase.RemoveNoteUseCase
 import info.note.app.ui.note.NoteScreenViewModel.NoteEffect
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

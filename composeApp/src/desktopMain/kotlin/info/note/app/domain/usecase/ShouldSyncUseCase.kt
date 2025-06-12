@@ -1,7 +1,7 @@
 package info.note.app.domain.usecase
 
 import info.note.app.Preferences
-import info.note.app.domain.repository.note.NoteRepository
+import info.note.app.feature.note.repository.NoteRepository
 import kotlinx.coroutines.flow.first
 
 class ShouldSyncUseCase(

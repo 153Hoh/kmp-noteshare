@@ -49,6 +49,20 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
         }
+        androidUnitTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotest.framework.engine)
+            implementation(libs.kotest.assertions.core)
+            implementation(libs.kotest.assertions.core)
+            implementation(libs.kotest.property)
+            implementation(libs.kotest.runner.junit5)
+            implementation(libs.mockk)
+            implementation(libs.turbine)
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.navigation.compose)
+            implementation(libs.androidx.navigation.testing)
+        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -92,6 +106,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.navigation.compose)
             implementation(libs.androidx.navigation.testing)
+            implementation(libs.androidx.room.testing)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

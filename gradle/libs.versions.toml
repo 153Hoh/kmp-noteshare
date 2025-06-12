@@ -25,6 +25,7 @@ koinTest = "3.2.0"
 kotest = "5.9.0"
 kotlin = "2.1.21"
 kotlinx-coroutines = "1.10.2"
+kotlinxCoroutinesTest = "2.7.1"
 kotlinxSerializationJson = "1.8.1"
 ktorClientContentNegotiation = "2.5.1"
 ktorfitLib = "2.5.1"
@@ -51,6 +52,7 @@ ktorfit = "2.5.1"
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationTesting" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
 compose-qr-code = { module = "com.lightspark:compose-qr-code", version.ref = "composeQrCode" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
@@ -79,6 +81,7 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorServerCore" }

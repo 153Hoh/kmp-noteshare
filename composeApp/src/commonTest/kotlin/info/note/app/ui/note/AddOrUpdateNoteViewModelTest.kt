@@ -7,13 +7,14 @@ import app.cash.turbine.turbineScope
 import info.note.app.MainCoroutineListener
 import info.note.app.NoteScreens
 import info.note.app.createNote
-import info.note.app.domain.usecase.AddOrUpdateNoteUseCase
-import info.note.app.domain.usecase.FetchImageFromCameraUseCase
-import info.note.app.domain.usecase.FetchImageFromGalleryUseCase
-import info.note.app.domain.usecase.FetchImageFromStorageUseCase
-import info.note.app.domain.usecase.FetchNoteDetailsUseCase
-import info.note.app.domain.usecase.IsCameraImageAvailableUseCase
-import info.note.app.domain.usecase.IsGalleryImageAvailableUseCase
+import info.note.app.feature.image.repository.exception.NoPermissionException
+import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
+import info.note.app.feature.image.usecase.FetchImageFromCameraUseCase
+import info.note.app.feature.image.usecase.FetchImageFromGalleryUseCase
+import info.note.app.feature.file.usecase.FetchImageFromStorageUseCase
+import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
+import info.note.app.feature.image.usecase.IsCameraImageAvailableUseCase
+import info.note.app.feature.image.usecase.IsGalleryImageAvailableUseCase
 import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel
 import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect
 import io.kotest.core.listeners.TestListener
@@ -22,6 +23,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 
 
@@ -49,6 +51,8 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
             fetchImageFromStorageUseCase
         )
     }
+
+    afterEach { unmockkAll() }
 
     // Fails on Android test runner
     "When noteId is given then noteDetails are fetched" {
@@ -146,7 +150,16 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
         runTest {
 
             coEvery {
-                addOrUpdateNoteUseCase(any(), any(), any(), any())
+                addOrUpdateNoteUseCase(
+                    noteId = any(),
+                    title = "title",
+                    message = any(),
+                    isImportant = any(),
+                    hour = any(),
+                    minute = any(),
+                    dateInMillis = any(),
+                    image = any()
+                )
             } returns Result.success(Unit)
 
             createViewModel()
@@ -170,18 +183,24 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
     "Add note fail shows error" {
         runTest {
-            coEvery {
-                addOrUpdateNoteUseCase(any(), any(), any(), any())
-            } returns Result.failure(Exception())
-
             createViewModel()
+
+            coEvery {
+                addOrUpdateNoteUseCase(
+                    noteId = null,
+                    title = "titleFail",
+                    message = "",
+                    isImportant = false,
+                    creationTime = any()
+                )
+            } returns Result.failure(Exception())
 
             turbineScope {
 
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("title"))
+                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("titleFail"))
                     skipItems(1)
-                    awaitItem().title shouldBe "title"
+                    awaitItem().title shouldBe "titleFail"
                 }
 
                 sut.effect.test {
@@ -216,6 +235,22 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
                     sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnMessageUpdated("message"))
                     skipItems(1)
                     awaitItem().message shouldBe "message"
+                }
+            }
+        }
+    }
+
+    "AddImageFromCameraClickedEvent asks for permissions" {
+        runTest {
+            createViewModel()
+
+            coEvery { fetchImageFromCameraUseCase() } returns Result.failure(NoPermissionException())
+
+            turbineScope {
+                sut.effect.test {
+                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddImageFromCameraClicked)
+
+                    awaitItem() shouldBe AddNoteScreenEffect.PermissionRequired
                 }
             }
         }

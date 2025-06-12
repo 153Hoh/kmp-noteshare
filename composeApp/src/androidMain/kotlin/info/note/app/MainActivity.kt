@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import info.note.app.sync.NoteSyncController
+import info.note.app.feature.sync.repository.NoteSyncController
 import info.note.app.ui.settings.SettingsScreen
 import info.note.app.ui.settings.permission.PermissionScreen
 import io.github.vinceglb.filekit.FileKit

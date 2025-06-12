@@ -1,6 +1,6 @@
 package info.note.app.domain.usecase
 
-import info.note.app.domain.repository.file.FileRepository
+import info.note.app.feature.file.repository.FileRepository
 import java.io.File
 
 class FetchFileForDownloadUseCase(

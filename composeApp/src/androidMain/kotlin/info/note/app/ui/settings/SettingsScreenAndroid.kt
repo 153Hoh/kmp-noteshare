@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,7 @@ import info.note.app.rememberFlowWithLifecycle
 import info.note.app.ui.settings.home.SettingsHomeScreen
 import info.note.app.ui.settings.permission.PermissionScreen
 import info.note.app.ui.settings.sync.SyncWithPcScreen
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class SettingsScreens {
@@ -33,10 +35,8 @@ fun SettingsScreen(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
-
-    LaunchedEffect(effect) {
-        effect.collect {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest {
             when (it) {
                 is SettingsScreenViewModel.SettingsScreenEffect.ShowSnackBar -> {
                     snackBarHostState.showSnackbar(it.message)

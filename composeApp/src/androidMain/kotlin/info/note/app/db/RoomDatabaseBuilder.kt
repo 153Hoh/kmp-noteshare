@@ -3,8 +3,8 @@ package info.note.app.db
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import info.note.app.domain.repository.note.db.DatabaseBuilder
-import info.note.app.domain.repository.note.db.NoteDatabase
+import info.note.app.feature.note.repository.DatabaseBuilder
+import info.note.app.feature.note.repository.NoteDatabase
 
 class RoomDatabaseBuilder(
     private val context: Context

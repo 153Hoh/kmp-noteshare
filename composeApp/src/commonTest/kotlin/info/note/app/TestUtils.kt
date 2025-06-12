@@ -1,7 +1,7 @@
 package info.note.app
 
-import info.note.app.domain.model.Note
-import info.note.app.domain.repository.note.db.NoteEntity
+import info.note.app.feature.note.model.Note
+import info.note.app.feature.note.repository.NoteEntity
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
 import io.kotest.core.test.TestCase
@@ -16,13 +16,17 @@ fun createNoteEntity(
     title: String = "Title",
     message: String = "Message",
     creationTime: Long = 123L,
-    isImportant: Boolean = false
+    isImportant: Boolean = false,
+    dueDate: Long = 0L,
+    imageId: String = ""
 ): NoteEntity = NoteEntity(
     noteId = noteId,
     title = title,
     message = message,
     creationTime = creationTime,
-    isImportant = isImportant
+    isImportant = isImportant,
+    dueDate = dueDate,
+    imageId = imageId
 )
 
 fun createNote(
@@ -30,13 +34,17 @@ fun createNote(
     title: String = "Title",
     message: String = "Message",
     creationTime: Long = 123L,
-    isImportant: Boolean = false
+    isImportant: Boolean = false,
+    dueDate: Long = 0L,
+    imageId: String = ""
 ): Note = Note(
     id = noteId,
     title = title,
     message = message,
     creationTime = creationTime,
-    isImportant = isImportant
+    isImportant = isImportant,
+    dueDate = dueDate,
+    imageId = imageId
 )
 
 class CoroutineTestListener : TestListener {

@@ -2,7 +2,7 @@ package info.note.app.ui.settings.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.domain.usecase.DeleteAllNotesUseCase
+import info.note.app.feature.note.usecase.DeleteAllNotesUseCase
 import info.note.app.domain.usecase.FetchLastSyncStateUseCase
 import info.note.app.domain.usecase.FetchLastSyncTimeUseCase
 import info.note.app.ui.settings.ConfirmationDialogState

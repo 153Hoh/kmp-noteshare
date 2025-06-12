@@ -1,10 +1,10 @@
 package info.note.app.server.routing
 
-import info.note.app.domain.model.CheckFilesRequestBody
-import info.note.app.domain.model.ConnectResponseBody
-import info.note.app.domain.model.SyncRequestBody
-import info.note.app.domain.model.SyncResponseBody
-import info.note.app.domain.model.UploadResponseBody
+import info.note.app.feature.sync.model.CheckFilesRequestBody
+import info.note.app.feature.sync.model.ConnectResponseBody
+import info.note.app.feature.sync.model.SyncRequestBody
+import info.note.app.feature.sync.model.SyncResponseBody
+import info.note.app.feature.sync.model.UploadResponseBody
 import info.note.app.domain.usecase.CreateCheckFileIdsResponseUseCase
 import info.note.app.domain.usecase.FetchFileForDownloadUseCase
 import info.note.app.domain.usecase.FetchSyncKeyUseCase

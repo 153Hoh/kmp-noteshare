@@ -5,21 +5,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import info.note.app.NoteScreens
-import info.note.app.domain.repository.image.ImageResult
-import info.note.app.domain.repository.image.exception.CapabilityNotSupportedException
-import info.note.app.domain.repository.image.exception.NoPermissionException
-import info.note.app.domain.usecase.AddOrUpdateNoteUseCase
-import info.note.app.domain.usecase.FetchImageFromCameraUseCase
-import info.note.app.domain.usecase.FetchImageFromGalleryUseCase
-import info.note.app.domain.usecase.FetchImageFromStorageUseCase
-import info.note.app.domain.usecase.FetchNoteDetailsUseCase
-import info.note.app.domain.usecase.IsCameraImageAvailableUseCase
-import info.note.app.domain.usecase.IsGalleryImageAvailableUseCase
-import kotlinx.coroutines.channels.Channel
+import info.note.app.feature.image.model.ImageResult
+import info.note.app.feature.image.repository.exception.CapabilityNotSupportedException
+import info.note.app.feature.image.repository.exception.NoPermissionException
+import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
+import info.note.app.feature.image.usecase.FetchImageFromCameraUseCase
+import info.note.app.feature.image.usecase.FetchImageFromGalleryUseCase
+import info.note.app.feature.file.usecase.FetchImageFromStorageUseCase
+import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
+import info.note.app.feature.image.usecase.IsCameraImageAvailableUseCase
+import info.note.app.feature.image.usecase.IsGalleryImageAvailableUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -91,8 +91,8 @@ class AddOrUpdateNoteScreenViewModel(
         started = SharingStarted.WhileSubscribed(5000L)
     )
 
-    private val _effect = Channel<AddNoteScreenEffect>(capacity = Channel.CONFLATED)
-    val effect = _effect.receiveAsFlow()
+    private val _effect = MutableSharedFlow<AddNoteScreenEffect>()
+    val effect = _effect.asSharedFlow()
 
     fun onEvent(event: AddNoteScreenEvent) {
         viewModelScope.launch {
@@ -141,7 +141,7 @@ class AddOrUpdateNoteScreenViewModel(
 
     private suspend fun addNote() {
         if (state.value.title.isEmpty()) {
-            _effect.send(AddNoteScreenEffect.ShowError("Cannot add a note without a title!"))
+            _effect.emit(AddNoteScreenEffect.ShowError("Cannot add a note without a title!"))
             return
         }
 
@@ -155,8 +155,11 @@ class AddOrUpdateNoteScreenViewModel(
                 minute = minute,
                 dateInMillis = dateInMillis,
                 image = image
-            ).onSuccess { _effect.send(AddNoteScreenEffect.NavigateBack) }
-                .onFailure { _effect.send(AddNoteScreenEffect.ShowError("Cannot add a note!")) }
+            ).onSuccess {
+                _effect.emit(AddNoteScreenEffect.NavigateBack)
+            }.onFailure {
+                _effect.emit(AddNoteScreenEffect.ShowError("Cannot add a note!"))
+            }
         }
     }
 
@@ -165,9 +168,9 @@ class AddOrUpdateNoteScreenViewModel(
             _state.update { it.copy(tempImage = result) }
         }.onFailure {
             when (it) {
-                is NoPermissionException -> _effect.send(AddNoteScreenEffect.PermissionRequired)
-                is CapabilityNotSupportedException -> _effect.send(AddNoteScreenEffect.ShowError("This device does not support this capability!"))
-                else -> _effect.send(AddNoteScreenEffect.ShowError("Cannot load image!"))
+                is NoPermissionException -> _effect.emit(AddNoteScreenEffect.PermissionRequired)
+                is CapabilityNotSupportedException -> _effect.emit(AddNoteScreenEffect.ShowError("This device does not support this capability!"))
+                else -> _effect.emit(AddNoteScreenEffect.ShowError("Cannot load image!"))
             }
         }
     }

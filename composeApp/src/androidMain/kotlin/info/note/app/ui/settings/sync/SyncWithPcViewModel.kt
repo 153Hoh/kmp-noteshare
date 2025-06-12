@@ -2,10 +2,10 @@ package info.note.app.ui.settings.sync
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.domain.usecase.CheckServerUseCase
-import info.note.app.domain.usecase.DisconnectSyncUseCase
-import info.note.app.domain.usecase.FetchSyncKeyUseCase
-import info.note.app.domain.usecase.SetSyncServerIpUseCase
+import info.note.app.feature.sync.usecase.CheckServerUseCase
+import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
+import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
+import info.note.app.feature.preferences.usecase.SetSyncServerIpUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

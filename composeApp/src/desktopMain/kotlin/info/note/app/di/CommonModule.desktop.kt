@@ -6,8 +6,8 @@ import info.note.app.Platform
 import info.note.app.Preferences
 import info.note.app.db.RoomDatabaseBuilder
 import info.note.app.domain.image.DesktopImagePickerRepository
-import info.note.app.domain.repository.image.ImagePickerRepository
-import info.note.app.domain.repository.note.db.DatabaseBuilder
+import info.note.app.feature.image.repository.ImagePickerRepository
+import info.note.app.feature.note.repository.DatabaseBuilder
 import info.note.app.domain.usecase.CreateCheckFileIdsResponseUseCase
 import info.note.app.domain.usecase.DisconnectSyncUseCase
 import info.note.app.domain.usecase.FetchDeviceIpUseCase

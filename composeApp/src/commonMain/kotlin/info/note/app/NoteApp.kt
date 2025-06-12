@@ -32,6 +32,7 @@ import info.note.app.ui.add.AddOrUpdateNoteScreen
 import info.note.app.ui.note.NoteScreen
 import info.note.app.ui.settings.Settings
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -59,11 +60,10 @@ fun NoteApp(
     permissionScreen: @Composable (onConfirmClicked: () -> Unit) -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
     val state = viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(effect) {
-        effect.collect {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest {
             when (it) {
                 is NoteAppViewModel.NoteAppEffect.ShowSnackBar -> {
                     snackBarHostState.showSnackbar(it.message)
@@ -177,17 +177,4 @@ fun NoteAppBar(
             }
         }
     )
-}
-
-@Composable
-fun <T> rememberFlowWithLifecycle(
-    flow: Flow<T>,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-): Flow<T> {
-    return remember(flow, lifecycleOwner) {
-        flow.flowWithLifecycle(
-            lifecycleOwner.lifecycle,
-            Lifecycle.State.STARTED
-        )
-    }
 }

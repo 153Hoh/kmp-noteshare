@@ -1,11 +1,11 @@
 package info.note.app.domain.image
 
-import info.note.app.domain.repository.image.ImagePickerCapabilities
-import info.note.app.domain.repository.image.ImagePickerRepository
-import info.note.app.domain.repository.image.ImageResult
-import info.note.app.domain.repository.image.exception.CapabilityNotSupportedException
-import info.note.app.domain.repository.image.exception.InvalidImageException
-import info.note.app.domain.repository.image.toImageResult
+import info.note.app.feature.image.repository.ImagePickerCapabilities
+import info.note.app.feature.image.repository.ImagePickerRepository
+import info.note.app.feature.image.model.ImageResult
+import info.note.app.feature.image.repository.exception.CapabilityNotSupportedException
+import info.note.app.feature.image.repository.exception.InvalidImageException
+import info.note.app.feature.image.model.toImageResult
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker

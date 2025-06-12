@@ -6,11 +6,11 @@ import info.note.app.domain.usecase.DisconnectSyncUseCase
 import info.note.app.domain.usecase.FetchDeviceIpUseCase
 import info.note.app.domain.usecase.FetchSyncKeyUseCase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -51,15 +51,15 @@ class ShowSyncQrViewModel(
         started = SharingStarted.WhileSubscribed(5000L)
     )
 
-    private val _effect = Channel<ShowSyncQrEffect>(Channel.CONFLATED)
-    val effect = _effect.receiveAsFlow()
+    private val _effect = MutableSharedFlow<ShowSyncQrEffect>()
+    val effect = _effect.asSharedFlow()
 
     fun onEvent(event: ShowSyncQrEvent) {
         viewModelScope.launch {
             when (event) {
                 ShowSyncQrEvent.DisconnectEvent -> {
                     disconnectSyncUseCase()
-                    _effect.send(ShowSyncQrEffect.ShowError("Disconnected successfully!"))
+                    _effect.emit(ShowSyncQrEffect.ShowError("Disconnected successfully!"))
                     _state.update { it.copy(isLoading = true, isAlreadySyncing = false) }
                     fetchDeviceIp()
                 }
@@ -73,7 +73,7 @@ class ShowSyncQrViewModel(
         fetchDeviceIpUseCase().onSuccess { deviceIp ->
             _state.update { it.copy(isLoading = false, deviceIp = deviceIp) }
         }.onFailure {
-            _effect.send(ShowSyncQrEffect.ShowError("Cannot create QR code!"))
+            _effect.emit(ShowSyncQrEffect.ShowError("Cannot create QR code!"))
         }
     }
 }

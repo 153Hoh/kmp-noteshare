@@ -3,7 +3,7 @@ package info.note.app.ui.add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import info.note.app.rememberFlowWithLifecycle
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -14,10 +14,9 @@ fun AddOrUpdateNoteScreen(
     onShowSnackBar: (String) -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
 
-    LaunchedEffect(effect) {
-        effect.collect {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest {
             when (it) {
                 AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.NavigateBack -> onNavigateBack()
                 is AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.ShowError -> onShowSnackBar(it.message)

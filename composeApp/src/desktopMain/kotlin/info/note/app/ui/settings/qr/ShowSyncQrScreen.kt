@@ -13,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import info.note.app.rememberFlowWithLifecycle
 import info.note.app.ui.settings.AlreadySyncingCard
 import io.github.alexzhirkevich.qrose.options.QrFrameShape
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -28,10 +28,9 @@ fun ShownSyncQrScreen(
 ) {
 
     val state = viewModel.state.collectAsStateWithLifecycle()
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
 
-    LaunchedEffect(effect) {
-        effect.collect {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest {
             when (it) {
                 is ShowSyncQrViewModel.ShowSyncQrEffect.ShowError -> onShowSnackBar(it.message)
             }
