@@ -11,7 +11,8 @@ fun AddOrUpdateNoteScreen(
     viewModel: AddOrUpdateNoteScreenViewModel = koinViewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToPermissionScreen: () -> Unit,
-    onShowSnackBar: (String) -> Unit
+    onShowSnackBar: (String) -> Unit,
+    onNoteTitleChanged: (String) -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
@@ -21,6 +22,7 @@ fun AddOrUpdateNoteScreen(
                 AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.NavigateBack -> onNavigateBack()
                 is AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.ShowError -> onShowSnackBar(it.message)
                 AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.PermissionRequired -> onNavigateToPermissionScreen()
+                is AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect.NoteTitleChanged -> onNoteTitleChanged(it.noteTitle)
             }
         }
     }
@@ -75,6 +77,9 @@ fun AddOrUpdateNoteScreen(
         },
         onCloseHighLightClicked = {
             viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.CloseImageHighlight)
+        },
+        onEditClicked = {
+            viewModel.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.EditClicked)
         }
     )
 }

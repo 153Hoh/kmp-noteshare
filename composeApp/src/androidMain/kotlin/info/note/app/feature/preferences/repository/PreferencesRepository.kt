@@ -15,4 +15,7 @@ interface PreferencesRepository {
 
     suspend fun setSyncKey(key: String)
     suspend fun getSyncKey(): String
+
+    fun getRawThemeState(): Flow<String>
+    suspend fun setRawThemeState(rawThemeState: String)
 }

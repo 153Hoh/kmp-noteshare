@@ -7,6 +7,7 @@ import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.copyTo
 import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
+import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.list
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.Dispatchers
@@ -26,9 +27,15 @@ class FileRepositoryImpl(
                 val file = PlatformFile(fileToCache)
                 val cachedLocation = PlatformFile(platform.filesDir, newFileName)
 
+                if (cachedLocation.exists()) {
+                    return@runCatching cachedLocation.absolutePath()
+                }
+
                 file.copyTo(cachedLocation)
 
                 return@runCatching cachedLocation.absolutePath()
+            }.onFailure {
+                it.printStackTrace()
             }
         }
 

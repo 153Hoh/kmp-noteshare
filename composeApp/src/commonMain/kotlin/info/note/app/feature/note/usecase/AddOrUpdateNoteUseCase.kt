@@ -37,7 +37,7 @@ class AddOrUpdateNoteUseCase(
         }
 
         if (image != null) {
-            fileRepository.cacheImageFile(image.path, image.fileId).getOrElse {
+            fileRepository.cacheImageFile(image.path, image.fileId).onFailure {
                 return Result.failure(FileSaveException())
             }
         }

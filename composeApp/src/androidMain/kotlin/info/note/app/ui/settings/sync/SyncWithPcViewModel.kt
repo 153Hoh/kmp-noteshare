@@ -6,11 +6,11 @@ import info.note.app.feature.sync.usecase.CheckServerUseCase
 import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
 import info.note.app.feature.preferences.usecase.SetSyncServerIpUseCase
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,8 +50,8 @@ class SyncWithPcViewModel(
         started = SharingStarted.WhileSubscribed(5000L)
     )
 
-    private val _effect = Channel<SyncWithPcEffect>(Channel.CONFLATED)
-    val effect = _effect.receiveAsFlow()
+    private val _effect = MutableSharedFlow<SyncWithPcEffect>()
+    val effect = _effect.asSharedFlow()
 
     fun onEvent(event: SyncWithPcEvent) {
         viewModelScope.launch {
@@ -59,7 +59,7 @@ class SyncWithPcViewModel(
                 is SyncWithPcEvent.QrResult -> handleQr(event.qr)
                 SyncWithPcEvent.DisconnectEvent -> {
                     disconnectSyncUseCase()
-                    _effect.send(SyncWithPcEffect.ShowError("Disconnected successfully!"))
+                    _effect.emit(SyncWithPcEffect.ShowError("Disconnected successfully!"))
                     _state.update { it.copy(isScanning = true, isAlreadySyncing = false) }
                 }
             }

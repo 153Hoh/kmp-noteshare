@@ -61,6 +61,14 @@ class AppPreferencesRepository(
         context.datastore.data.map { settings -> settings[stringPreferencesKey(SYNC_KEY)] ?: "" }
             .first()
 
+    override fun getRawThemeState(): Flow<String> =
+        context.datastore.data.map { settings -> settings[stringPreferencesKey(THEME_STATE)] ?: "" }
+
+    override suspend fun setRawThemeState(rawThemeState: String) {
+        context.datastore.edit { settings ->
+            settings[stringPreferencesKey(THEME_STATE)] = rawThemeState
+        }
+    }
 
 
     companion object {
@@ -68,5 +76,6 @@ class AppPreferencesRepository(
         private const val LAST_SYNC_STATE = "lastSyncState"
         private const val SYNC_KEY = "syncKey"
         private const val LAST_SYNC_TIME = "lastSyncTime"
+        private const val THEME_STATE = "themeState"
     }
 }

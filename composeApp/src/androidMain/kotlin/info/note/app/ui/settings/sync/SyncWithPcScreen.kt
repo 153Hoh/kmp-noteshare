@@ -22,8 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.CompoundBarcodeView
 import info.note.app.CheckForPermission
-import info.note.app.rememberFlowWithLifecycle
 import info.note.app.ui.settings.AlreadySyncingCard
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.androidx.compose.koinViewModel
 
@@ -34,10 +34,9 @@ fun SyncWithPcScreen(
     onShowError: (String) -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
 
-    LaunchedEffect(effect) {
-        effect.collect {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest {
             when (it) {
                 is SyncWithPcViewModel.SyncWithPcEffect.ShowError -> onShowError(it.message)
             }

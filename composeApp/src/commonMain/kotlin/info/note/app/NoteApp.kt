@@ -1,10 +1,16 @@
 package info.note.app
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,13 +23,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,7 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import info.note.app.ui.add.AddOrUpdateNoteScreen
 import info.note.app.ui.note.NoteScreen
 import info.note.app.ui.settings.Settings
-import kotlinx.coroutines.flow.Flow
+import info.note.app.ui.theme.ThemeState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,10 +58,12 @@ sealed class NoteScreens {
 @Composable
 fun NoteApp(
     modifier: Modifier = Modifier,
+    themeState: ThemeState = ThemeState.AUTO,
     navController: NavHostController = rememberNavController(),
     viewModel: NoteAppViewModel = koinViewModel(),
     settingsContent: @Composable () -> Unit = {},
-    permissionScreen: @Composable (onConfirmClicked: () -> Unit) -> Unit = {}
+    permissionScreen: @Composable (onConfirmClicked: () -> Unit) -> Unit = {},
+    onThemeStateChanged: (ThemeState) -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val state = viewModel.state.collectAsStateWithLifecycle()
@@ -79,8 +85,10 @@ fun NoteApp(
                 title = state.value.topBarTitle,
                 canNavigateBack = !state.value.isOnHomeScreen,
                 isOnHomeScreen = state.value.isOnHomeScreen,
+                themeState = themeState,
                 navigateUp = { navController.navigateUp() },
-                navigateToSettings = { navController.navigate(NoteScreens.Settings) }
+                navigateToSettings = { navController.navigate(NoteScreens.Settings) },
+                onThemeStateChanged = onThemeStateChanged
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
@@ -106,18 +114,20 @@ fun NoteApp(
                 )
             }
             composable<NoteScreens.AddOrUpdateNoteScreen> {
-                viewModel.onEvent(
-                    NoteAppViewModel.NoteAppEvent.UpdateTopBar(
-                        title = "Add note",
-                        isOnHomeScreen = false
-                    )
-                )
                 AddOrUpdateNoteScreen(
                     onNavigateBack = { navController.navigate(NoteScreens.NoteScreen) },
                     onShowSnackBar = {
                         viewModel.onEvent(NoteAppViewModel.NoteAppEvent.ShowSnackBar(it))
                     },
-                    onNavigateToPermissionScreen = { navController.navigate(NoteScreens.PermissionScreen) }
+                    onNavigateToPermissionScreen = { navController.navigate(NoteScreens.PermissionScreen) },
+                    onNoteTitleChanged = { noteTitle ->
+                        viewModel.onEvent(
+                            NoteAppViewModel.NoteAppEvent.UpdateTopBar(
+                                title = noteTitle,
+                                isOnHomeScreen = false
+                            )
+                        )
+                    }
                 )
             }
             composable<NoteScreens.Settings> {
@@ -148,9 +158,13 @@ fun NoteAppBar(
     title: String = "",
     canNavigateBack: Boolean,
     isOnHomeScreen: Boolean,
+    themeState: ThemeState,
     navigateUp: () -> Unit,
-    navigateToSettings: () -> Unit
+    navigateToSettings: () -> Unit,
+    onThemeStateChanged: (ThemeState) -> Unit
 ) {
+    val isThemeStateSelectorExpanded = remember { mutableStateOf(false) }
+
     TopAppBar(
         title = { Text(title) },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -174,7 +188,87 @@ fun NoteAppBar(
                         contentDescription = ""
                     )
                 }
+
+                ThemeChangerIcon(
+                    isExpanded = isThemeStateSelectorExpanded,
+                    themeState = themeState,
+                    onThemeStateChanged = onThemeStateChanged
+                )
+
             }
         }
     )
+}
+
+@Composable
+fun ThemeChangerIcon(
+    isExpanded: MutableState<Boolean> = mutableStateOf(false),
+    themeState: ThemeState = ThemeState.AUTO,
+    onThemeStateChanged: (ThemeState) -> Unit
+) {
+    IconButton(onClick = { isExpanded.value = true }) {
+        Icon(
+            contentDescription = "",
+            imageVector = when (themeState) {
+                ThemeState.DARK -> Icons.Outlined.DarkMode
+                ThemeState.LIGHT -> Icons.Outlined.LightMode
+                ThemeState.AUTO -> if (isSystemInDarkTheme()) {
+                    Icons.Outlined.DarkMode
+                } else {
+                    Icons.Outlined.LightMode
+                }
+            }
+        )
+    }
+
+    DropdownMenu(
+        expanded = isExpanded.value,
+        onDismissRequest = { isExpanded.value = false }
+    ) {
+        DropdownMenuItem(
+            text = { Text("Auto") },
+            trailingIcon = {
+                if (themeState == ThemeState.AUTO) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = ""
+                    )
+                }
+            },
+            onClick = {
+                onThemeStateChanged(ThemeState.AUTO)
+                isExpanded.value = false
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Light") },
+            trailingIcon = {
+                if (themeState == ThemeState.LIGHT) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = ""
+                    )
+                }
+            },
+            onClick = {
+                onThemeStateChanged(ThemeState.LIGHT)
+                isExpanded.value = false
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Dark") },
+            trailingIcon = {
+                if (themeState == ThemeState.DARK) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = ""
+                    )
+                }
+            },
+            onClick = {
+                onThemeStateChanged(ThemeState.DARK)
+                isExpanded.value = false
+            }
+        )
+    }
 }

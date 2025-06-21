@@ -1,25 +1,28 @@
 package info.note.app.di
 
-import info.note.app.AppPreferences
 import info.note.app.JVMPlatform
+import info.note.app.MainViewModel
 import info.note.app.Platform
-import info.note.app.Preferences
 import info.note.app.db.RoomDatabaseBuilder
-import info.note.app.domain.image.DesktopImagePickerRepository
+import info.note.app.feature.file.usecase.CreateCheckFileIdsResponseUseCase
+import info.note.app.feature.file.usecase.FetchFileForDownloadUseCase
+import info.note.app.feature.file.usecase.HandleFileUploadUseCase
+import info.note.app.feature.image.repository.DesktopImagePickerRepository
 import info.note.app.feature.image.repository.ImagePickerRepository
 import info.note.app.feature.note.repository.DatabaseBuilder
-import info.note.app.domain.usecase.CreateCheckFileIdsResponseUseCase
-import info.note.app.domain.usecase.DisconnectSyncUseCase
-import info.note.app.domain.usecase.FetchDeviceIpUseCase
-import info.note.app.domain.usecase.FetchFileForDownloadUseCase
-import info.note.app.domain.usecase.FetchLastSyncStateUseCase
-import info.note.app.domain.usecase.FetchLastSyncTimeUseCase
-import info.note.app.domain.usecase.FetchSyncKeyUseCase
-import info.note.app.domain.usecase.HandleConnectUseCase
-import info.note.app.domain.usecase.HandleFileUploadUseCase
-import info.note.app.domain.usecase.SetLastSyncStateUseCase
-import info.note.app.domain.usecase.ShouldSyncUseCase
-import info.note.app.domain.usecase.SyncNotesUseCase
+import info.note.app.feature.note.usecase.FetchDeviceIpUseCase
+import info.note.app.feature.note.usecase.ShouldSyncUseCase
+import info.note.app.feature.note.usecase.SyncNotesUseCase
+import info.note.app.feature.preferences.repository.AppPreferencesRepository
+import info.note.app.feature.preferences.repository.PreferencesRepository
+import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
+import info.note.app.feature.preferences.usecase.FetchLastSyncStateUseCase
+import info.note.app.feature.preferences.usecase.FetchLastSyncTimeUseCase
+import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
+import info.note.app.feature.preferences.usecase.FetchThemeStateUseCase
+import info.note.app.feature.preferences.usecase.HandleConnectUseCase
+import info.note.app.feature.preferences.usecase.SetLastSyncStateUseCase
+import info.note.app.feature.preferences.usecase.SetThemeStateUseCase
 import info.note.app.server.SyncServerController
 import info.note.app.server.routing.ServerRoutes
 import info.note.app.ui.settings.SettingsScreenViewModel
@@ -35,7 +38,7 @@ actual fun platformModule() = module {
 
     single<ImagePickerRepository> { DesktopImagePickerRepository() }
 
-    single<Preferences> { AppPreferences() }
+    single<PreferencesRepository> { AppPreferencesRepository() }
 
     single { SyncNotesUseCase(get(), get()) }
     single { ShouldSyncUseCase(get(), get()) }
@@ -49,6 +52,8 @@ actual fun platformModule() = module {
     single { CreateCheckFileIdsResponseUseCase(get()) }
     single { FetchFileForDownloadUseCase(get()) }
     single { HandleFileUploadUseCase(get()) }
+    single { FetchThemeStateUseCase(get()) }
+    single { SetThemeStateUseCase(get()) }
 
     single<ServerRoutes> { ServerRoutes(get(), get(), get(), get(), get(), get(), get(), get()) }
     single<SyncServerController> { SyncServerController(get()) }
@@ -56,4 +61,5 @@ actual fun platformModule() = module {
     viewModel { ShowSyncQrViewModel(get(), get(), get()) }
     viewModel { SettingsScreenViewModel() }
     viewModel { SettingsHomeScreenViewModel(get(), get(), get()) }
+    viewModel { MainViewModel(get(), get()) }
 }

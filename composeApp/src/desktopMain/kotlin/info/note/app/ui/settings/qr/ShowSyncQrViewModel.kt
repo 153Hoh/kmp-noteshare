@@ -2,9 +2,9 @@ package info.note.app.ui.settings.qr
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.domain.usecase.DisconnectSyncUseCase
-import info.note.app.domain.usecase.FetchDeviceIpUseCase
-import info.note.app.domain.usecase.FetchSyncKeyUseCase
+import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
+import info.note.app.feature.note.usecase.FetchDeviceIpUseCase
+import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

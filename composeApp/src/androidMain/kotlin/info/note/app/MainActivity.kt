@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -31,10 +32,12 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
 
     private val noteSyncHandler: NoteSyncController by inject()
+    private val viewModel: MainActivityViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -47,6 +50,8 @@ class MainActivity : ComponentActivity() {
         FileKit.init(this)
 
         setContent {
+            val state = viewModel.state.collectAsStateWithLifecycle()
+
             App(
                 modifier = Modifier
                     .statusBarsPadding()
@@ -55,7 +60,15 @@ class MainActivity : ComponentActivity() {
                 settingsContent = {
                     SettingsScreen()
                 },
-                permissionScreen = { PermissionScreen(it) }
+                permissionScreen = { PermissionScreen(it) },
+                onThemeStateChanged = {
+                    viewModel.onEvent(
+                        MainActivityViewModel.MainEvent.ThemeStateChanged(
+                            it
+                        )
+                    )
+                },
+                themeState = state.value.themeState
             )
         }
     }

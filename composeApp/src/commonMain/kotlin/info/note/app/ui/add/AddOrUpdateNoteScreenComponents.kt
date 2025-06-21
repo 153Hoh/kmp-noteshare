@@ -83,7 +83,8 @@ fun AddOrUpdateNoteScreenContent(
     onRemoveImageClicked: () -> Unit = {},
     onSetImageClicked: () -> Unit = {},
     onImageClicked: () -> Unit = {},
-    onCloseHighLightClicked: () -> Unit = {}
+    onCloseHighLightClicked: () -> Unit = {},
+    onEditClicked: () -> Unit = {}
 ) {
 
     Box(
@@ -102,17 +103,22 @@ fun AddOrUpdateNoteScreenContent(
                 modifier = Modifier.verticalScroll(scrollState).padding(bottom = 72.dp)
             ) {
                 NoteCard(
-                    state = state,
+                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
+                    title = state.title,
+                    message = state.message,
                     onTitleUpdated = onTitleUpdated,
                     onMessageUpdate = onMessageUpdate
                 )
                 TimeCard(
+                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
                     hour = state.hour,
                     minute = state.minute,
                     dateInMillis = state.dateInMillis,
-                    onSetTimeClicked = onSetTimeClicked
+                    onSetTimeClicked = onSetTimeClicked,
+                    onEditClicked = onEditClicked
                 )
-                AddImageCard(
+                ImageCard(
+                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
                     image = state.image?.bitmap ?: state.tempImage?.bitmap,
                     isGalleryAvailable = isGalleryAvailable,
                     isCameraAvailable = isCameraAvailable,
@@ -120,7 +126,8 @@ fun AddOrUpdateNoteScreenContent(
                     onAddFromCameraClicked = onAddFromCameraClicked,
                     onRemoveImageClicked = onRemoveImageClicked,
                     onSetImageClicked = onSetImageClicked,
-                    onImageClicked = onImageClicked
+                    onImageClicked = onImageClicked,
+                    onEditClicked = onEditClicked
                 )
             }
             if (state.highlightImage) {
@@ -134,10 +141,12 @@ fun AddOrUpdateNoteScreenContent(
             modifier = Modifier.fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .background(MaterialTheme.colorScheme.background),
-            addButtonTitle = state.buttonTitle,
+            noteState = state.noteState,
+            addButtonTitle = state.noteState.title,
             isImportant = state.isImportant,
             onAddNoteClicked = onAddNoteClicked,
-            onImportantClicked = onImportantClicked
+            onImportantClicked = onImportantClicked,
+            onEditClicked = onEditClicked
         )
 
         if (state.isLoading) {
@@ -200,23 +209,34 @@ fun ImageHighLightBox(
 }
 
 @Composable
-fun AddImageCard(
+fun ImageCard(
     image: ImageBitmap? = null,
+    isInEditMode: Boolean = false,
     isGalleryAvailable: Boolean = true,
     isCameraAvailable: Boolean = true,
     onAddFromGalleryClicked: () -> Unit = {},
     onAddFromCameraClicked: () -> Unit = {},
     onRemoveImageClicked: () -> Unit = {},
     onSetImageClicked: () -> Unit = {},
-    onImageClicked: () -> Unit = {}
+    onImageClicked: () -> Unit = {},
+    onEditClicked: () -> Unit = {}
 ) {
     val isImageCardExpanded = remember { mutableStateOf(false) }
+
+    LaunchedEffect(image, isInEditMode) {
+        if (image != null && !isInEditMode) {
+            isImageCardExpanded.value = true
+        }
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
             .clickable {
+                if (image == null && !isInEditMode) {
+                    onEditClicked()
+                }
                 if (!isImageCardExpanded.value) {
                     isImageCardExpanded.value = !isImageCardExpanded.value
                 }
@@ -285,12 +305,14 @@ fun AddImageCard(
                                 bitmap = image,
                                 contentDescription = "",
                             )
-                            Icon(
-                                modifier = Modifier.align(Alignment.TopEnd)
-                                    .clickable { onRemoveImageClicked() },
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = ""
-                            )
+                            if (isInEditMode) {
+                                Icon(
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                        .clickable { onRemoveImageClicked() },
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = ""
+                                )
+                            }
                         }
                     } else {
                         Row(
@@ -338,6 +360,7 @@ fun AddImageCard(
                     }
 
                     CardBottomButtonRow(
+                        isInEditMode = isInEditMode,
                         setEnabled = image != null,
                         onCloseClicked = {
                             isImageCardExpanded.value = !isImageCardExpanded.value
@@ -345,7 +368,8 @@ fun AddImageCard(
                         onSetClicked = {
                             onSetImageClicked()
                             isImageCardExpanded.value = false
-                        }
+                        },
+                        onEditClicked = onEditClicked
                     )
                 }
             }
@@ -356,10 +380,12 @@ fun AddImageCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeCard(
+    isInEditMode: Boolean = false,
     hour: Int? = null,
     minute: Int? = null,
     dateInMillis: Long? = null,
-    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> }
+    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> },
+    onEditClicked: () -> Unit = {}
 ) {
     val isTimeCardExpanded = remember { mutableStateOf(false) }
 
@@ -368,6 +394,9 @@ fun TimeCard(
             .fillMaxWidth()
             .animateContentSize()
             .clickable {
+                if (hour != null && minute != null && dateInMillis != null && !isInEditMode) {
+                    onEditClicked()
+                }
                 if (!isTimeCardExpanded.value) {
                     isTimeCardExpanded.value = !isTimeCardExpanded.value
                 }
@@ -393,6 +422,7 @@ fun TimeCard(
                 rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
 
             ExpandableTimePickerWithDatePicker(
+                isInEditMode = isInEditMode,
                 isExpanded = isTimeCardExpanded,
                 timePickerState = timePickerState,
                 datePickerState = datePickerState,
@@ -400,7 +430,8 @@ fun TimeCard(
                 hour = hour,
                 minute = minute,
                 dateInMillis = dateInMillis,
-                onSetTimeClicked = onSetTimeClicked
+                onSetTimeClicked = onSetTimeClicked,
+                onEditClicked = onEditClicked
             )
         }
     }
@@ -409,6 +440,7 @@ fun TimeCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandableTimePickerWithDatePicker(
+    isInEditMode: Boolean = false,
     isExpanded: MutableState<Boolean> = mutableStateOf(false),
     timePickerState: TimePickerState = rememberTimePickerState(),
     datePickerState: DatePickerState = rememberDatePickerState(),
@@ -416,7 +448,8 @@ fun ExpandableTimePickerWithDatePicker(
     hour: Int? = null,
     minute: Int? = null,
     dateInMillis: Long? = null,
-    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> }
+    onSetTimeClicked: (Int, Int, Long) -> Unit = { _, _, _ -> },
+    onEditClicked: () -> Unit = {}
 ) {
     val isDateExpanded = remember { mutableStateOf(false) }
 
@@ -487,6 +520,7 @@ fun ExpandableTimePickerWithDatePicker(
             )
 
             CardBottomButtonRow(
+                isInEditMode = isInEditMode,
                 onCloseClicked = {
                     if (isExpanded.value) {
                         isExpanded.value = !isExpanded.value
@@ -500,7 +534,8 @@ fun ExpandableTimePickerWithDatePicker(
                         ?: currentTimeCalendar.timeInMillis
                     )
                     isExpanded.value = !isExpanded.value
-                }
+                },
+                onEditClicked = onEditClicked
             )
         }
     }
@@ -560,9 +595,11 @@ fun ExpandableDatePicker(
 
 @Composable
 fun CardBottomButtonRow(
+    isInEditMode: Boolean = false,
     setEnabled: Boolean = true,
     onCloseClicked: () -> Unit = {},
-    onSetClicked: () -> Unit = {}
+    onSetClicked: () -> Unit = {},
+    onEditClicked: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -581,17 +618,25 @@ fun CardBottomButtonRow(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 4.dp, end = 4.dp),
-            onClick = onSetClicked,
+            onClick = {
+                if (!isInEditMode) {
+                    onEditClicked()
+                } else {
+                    onSetClicked()
+                }
+            },
             enabled = setEnabled
         ) {
-            Text("Set")
+            Text(text = if (isInEditMode) "Set" else "Edit")
         }
     }
 }
 
 @Composable
 fun NoteCard(
-    state: AddOrUpdateNoteScreenViewModel.AddNoteScreenState = AddOrUpdateNoteScreenViewModel.AddNoteScreenState(),
+    title: String,
+    message: String,
+    isInEditMode: Boolean = false,
     onTitleUpdated: (String) -> Unit = {},
     onMessageUpdate: (String) -> Unit = {},
 ) {
@@ -610,12 +655,14 @@ fun NoteCard(
                 modifier = Modifier
                     .padding(start = 24.dp, end = 24.dp)
                     .fillMaxWidth(),
-                value = state.title,
+                value = title,
+                enabled = isInEditMode,
                 label = { Text("Title") },
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    disabledIndicatorColor = Color.Transparent,
+                    disabledTextColor = MaterialTheme.colorScheme.secondary
                 ),
                 onValueChange = onTitleUpdated
             )
@@ -631,12 +678,14 @@ fun NoteCard(
                 modifier = Modifier
                     .padding(start = 24.dp, end = 24.dp)
                     .fillMaxWidth(),
-                value = state.message,
+                value = message,
+                enabled = isInEditMode,
                 label = { Text("Message") },
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                    disabledIndicatorColor = Color.Transparent,
+                    disabledTextColor = MaterialTheme.colorScheme.secondary
                 ),
                 onValueChange = onMessageUpdate
             )
@@ -646,20 +695,23 @@ fun NoteCard(
 
 @Composable
 fun BottomRow(
+    noteState: AddOrUpdateNoteScreenViewModel.NoteState = AddOrUpdateNoteScreenViewModel.NoteState.ADD,
     modifier: Modifier = Modifier,
     addButtonTitle: String = "Add note",
     isImportant: Boolean = false,
     onImportantClicked: () -> Unit = {},
-    onAddNoteClicked: () -> Unit = {}
+    onAddNoteClicked: () -> Unit = {},
+    onEditClicked: () -> Unit = {}
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Button(
-            onClick = onAddNoteClicked,
+            onClick = { if (noteState == AddOrUpdateNoteScreenViewModel.NoteState.READ) onEditClicked() else onAddNoteClicked() },
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.background
             )
         ) {
             Column(
@@ -678,9 +730,11 @@ fun BottomRow(
             }
         }
         Button(
+            enabled = noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
             onClick = onImportantClicked,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.background
             )
         ) {
             Column(

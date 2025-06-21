@@ -29,7 +29,9 @@ kotlin {
     jvm("desktop")
 
     sourceSets {
-        val desktopMain by getting
+        val desktopMain by getting {
+            resources.srcDir("/src/desktopMain/resources")
+        }
 
         androidMain.dependencies {
             implementation(compose.preview)
@@ -140,6 +142,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -166,8 +169,14 @@ compose.desktop {
         mainClass = "info.note.app.MainKt"
 
         nativeDistributions {
+            includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "info.note.app"
+
+            windows {
+                iconFile.set(project.file("/src/desktopMain/resources/ic_launcher.png"))
+            }
+
+            packageName = "NoteShare"
             packageVersion = "1.0.0"
         }
     }
