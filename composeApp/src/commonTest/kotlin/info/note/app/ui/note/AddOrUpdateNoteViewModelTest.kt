@@ -7,16 +7,18 @@ import app.cash.turbine.turbineScope
 import info.note.app.MainCoroutineListener
 import info.note.app.NoteScreens
 import info.note.app.createNote
+import info.note.app.feature.file.usecase.FetchImageFromStorageUseCase
 import info.note.app.feature.image.repository.exception.NoPermissionException
-import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
 import info.note.app.feature.image.usecase.FetchImageFromCameraUseCase
 import info.note.app.feature.image.usecase.FetchImageFromGalleryUseCase
-import info.note.app.feature.file.usecase.FetchImageFromStorageUseCase
-import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
 import info.note.app.feature.image.usecase.IsCameraImageAvailableUseCase
 import info.note.app.feature.image.usecase.IsGalleryImageAvailableUseCase
-import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel
-import info.note.app.ui.add.AddOrUpdateNoteScreenViewModel.AddNoteScreenEffect
+import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
+import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
+import info.note.app.ui.add.NoteDetailsScreenViewModel
+import info.note.app.ui.add.model.NoteDetailsEffect
+import info.note.app.ui.add.model.NoteDetailsEvent
+import info.note.app.ui.add.model.NoteState
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -37,10 +39,10 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
     val fetchImageFromCameraUseCase: FetchImageFromCameraUseCase = mockk()
     val fetchImageFromStorageUseCase: FetchImageFromStorageUseCase = mockk()
 
-    lateinit var sut: AddOrUpdateNoteScreenViewModel
+    lateinit var sut: NoteDetailsScreenViewModel
 
     fun createViewModel(savedStateHandle: SavedStateHandle = SavedStateHandle()) {
-        sut = AddOrUpdateNoteScreenViewModel(
+        sut = NoteDetailsScreenViewModel(
             savedStateHandle,
             addOrUpdateNoteUseCase,
             fetchNoteDetailsUseCase,
@@ -62,7 +64,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
                 createViewModel(
                     SavedStateHandle.Companion.invoke(
-                        NoteScreens.AddOrUpdateNoteScreen(
+                        NoteScreens.NoteDetailsScreen(
                             resultNote.id
                         )
                     )
@@ -76,7 +78,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
                     val item = awaitItem()
                     item.title shouldBe resultNote.title
                     item.message shouldBe resultNote.message
-                    item.buttonTitle shouldBe "Update note"
+                    item.noteState shouldBe NoteState.READ
                 }
             }
         }
@@ -89,7 +91,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
                 createViewModel()
 
                 sut.state.test {
-                    awaitItem().buttonTitle shouldBe "Add note"
+                    awaitItem().noteState shouldBe NoteState.ADD
                 }
             }
         }
@@ -111,12 +113,12 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
             turbineScope {
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("title"))
+                    sut.onEvent(NoteDetailsEvent.OnTitleUpdated("title"))
                     skipItems(2)
                 }
             }
 
-            sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddNoteEvent)
+            sut.onEvent(NoteDetailsEvent.AddNoteEvent)
 
             coVerify {
                 addOrUpdateNoteUseCase(
@@ -136,9 +138,9 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
                 createViewModel()
 
                 sut.effect.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddNoteEvent)
+                    sut.onEvent(NoteDetailsEvent.AddNoteEvent)
 
-                    awaitItem() shouldBe AddNoteScreenEffect.ShowError("Cannot add a note without a title!")
+                    awaitItem() shouldBe NoteDetailsEffect.ShowError("Cannot add a note without a title!")
 
                     coVerify(exactly = 0) { addOrUpdateNoteUseCase(any(), any(), any(), any()) }
                 }
@@ -167,15 +169,15 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
             turbineScope {
 
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("title"))
+                    sut.onEvent(NoteDetailsEvent.OnTitleUpdated("title"))
                     skipItems(1)
                     awaitItem().title shouldBe "title"
                 }
 
                 sut.effect.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddNoteEvent)
+                    sut.onEvent(NoteDetailsEvent.AddNoteEvent)
 
-                    awaitItem() shouldBe AddNoteScreenEffect.NavigateBack
+                    awaitItem() shouldBe NoteDetailsEffect.NavigateBack
                 }
             }
         }
@@ -198,15 +200,15 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
             turbineScope {
 
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("titleFail"))
+                    sut.onEvent(NoteDetailsEvent.OnTitleUpdated("titleFail"))
                     skipItems(1)
                     awaitItem().title shouldBe "titleFail"
                 }
 
                 sut.effect.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddNoteEvent)
+                    sut.onEvent(NoteDetailsEvent.AddNoteEvent)
 
-                    awaitItem() shouldBe AddNoteScreenEffect.ShowError("Cannot add a note!")
+                    awaitItem() shouldBe NoteDetailsEffect.ShowError("Cannot add a note!")
                 }
             }
         }
@@ -218,7 +220,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
             turbineScope {
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnTitleUpdated("title"))
+                    sut.onEvent(NoteDetailsEvent.OnTitleUpdated("title"))
                     skipItems(1)
                     awaitItem().title shouldBe "title"
                 }
@@ -232,7 +234,7 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
             turbineScope {
                 sut.state.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.OnMessageUpdated("message"))
+                    sut.onEvent(NoteDetailsEvent.OnMessageUpdated("message"))
                     skipItems(1)
                     awaitItem().message shouldBe "message"
                 }
@@ -248,9 +250,9 @@ class AddOrUpdateNoteViewModelTest : StringSpec({
 
             turbineScope {
                 sut.effect.test {
-                    sut.onEvent(AddOrUpdateNoteScreenViewModel.AddNoteScreenEvent.AddImageFromCameraClicked)
+                    sut.onEvent(NoteDetailsEvent.AddImageFromCameraClicked)
 
-                    awaitItem() shouldBe AddNoteScreenEffect.PermissionRequired
+                    awaitItem() shouldBe NoteDetailsEffect.PermissionRequired
                 }
             }
         }

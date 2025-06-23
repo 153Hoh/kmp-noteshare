@@ -14,6 +14,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import info.note.app.ui.settings.AlreadySyncingCard
+import info.note.app.ui.settings.qr.model.ShowSyncQrEffect
+import info.note.app.ui.settings.qr.model.ShowSyncQrEvent
 import io.github.alexzhirkevich.qrose.options.QrFrameShape
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
@@ -32,7 +34,7 @@ fun ShownSyncQrScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest {
             when (it) {
-                is ShowSyncQrViewModel.ShowSyncQrEffect.ShowError -> onShowSnackBar(it.message)
+                is ShowSyncQrEffect.ShowError -> onShowSnackBar(it.message)
             }
         }
     }
@@ -45,7 +47,7 @@ fun ShownSyncQrScreen(
         if (state.value.isAlreadySyncing) {
             AlreadySyncingCard(
                 onCancelClicked = onNavigateBack,
-                onDisconnectClicked = { viewModel.onEvent(ShowSyncQrViewModel.ShowSyncQrEvent.DisconnectEvent) }
+                onDisconnectClicked = { viewModel.onEvent(ShowSyncQrEvent.DisconnectEvent) }
             )
         } else {
             Text(

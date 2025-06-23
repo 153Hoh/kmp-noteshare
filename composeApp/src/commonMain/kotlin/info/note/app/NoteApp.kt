@@ -32,7 +32,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import info.note.app.ui.add.AddOrUpdateNoteScreen
+import info.note.app.ui.add.NoteDetailsScreen
 import info.note.app.ui.note.NoteScreen
 import info.note.app.ui.settings.Settings
 import info.note.app.ui.theme.ThemeState
@@ -46,7 +46,7 @@ sealed class NoteScreens {
     data object NoteScreen : NoteScreens()
 
     @Serializable
-    data class AddOrUpdateNoteScreen(val noteId: String? = null) : NoteScreens()
+    data class NoteDetailsScreen(val noteId: String? = null) : NoteScreens()
 
     @Serializable
     data object Settings : NoteScreens()
@@ -106,15 +106,15 @@ fun NoteApp(
                     )
                 )
                 NoteScreen(
-                    onNavigateToNote = { navController.navigate(NoteScreens.AddOrUpdateNoteScreen(it)) },
-                    onNavigateToAddNote = { navController.navigate(NoteScreens.AddOrUpdateNoteScreen()) },
+                    onNavigateToNote = { navController.navigate(NoteScreens.NoteDetailsScreen(it)) },
+                    onNavigateToAddNote = { navController.navigate(NoteScreens.NoteDetailsScreen()) },
                     onShowSnackBar = {
                         viewModel.onEvent(NoteAppViewModel.NoteAppEvent.ShowSnackBar(it))
                     }
                 )
             }
-            composable<NoteScreens.AddOrUpdateNoteScreen> {
-                AddOrUpdateNoteScreen(
+            composable<NoteScreens.NoteDetailsScreen> {
+                NoteDetailsScreen(
                     onNavigateBack = { navController.navigate(NoteScreens.NoteScreen) },
                     onShowSnackBar = {
                         viewModel.onEvent(NoteAppViewModel.NoteAppEvent.ShowSnackBar(it))

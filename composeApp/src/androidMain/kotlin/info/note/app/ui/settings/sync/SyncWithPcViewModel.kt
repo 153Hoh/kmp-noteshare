@@ -2,10 +2,13 @@ package info.note.app.ui.settings.sync
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.feature.sync.usecase.CheckServerUseCase
 import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
 import info.note.app.feature.preferences.usecase.SetSyncServerIpUseCase
+import info.note.app.feature.sync.usecase.CheckServerUseCase
+import info.note.app.ui.settings.sync.model.SyncWithPcEffect
+import info.note.app.ui.settings.sync.model.SyncWithPcEvent
+import info.note.app.ui.settings.sync.model.SyncWithPcState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,23 +24,6 @@ class SyncWithPcViewModel(
     private val fetchSyncKeyUseCase: FetchSyncKeyUseCase,
     private val disconnectSyncUseCase: DisconnectSyncUseCase
 ) : ViewModel() {
-
-    sealed class SyncWithPcEvent {
-        data class QrResult(val qr: String?) : SyncWithPcEvent()
-        data object DisconnectEvent : SyncWithPcEvent()
-    }
-
-    sealed class SyncWithPcEffect {
-        data class ShowError(val message: String) : SyncWithPcEffect()
-    }
-
-    data class SyncWithPcState(
-        val isScanning: Boolean = true,
-        val connecting: Boolean = false,
-        val connected: Boolean = false,
-        val connectError: Boolean = false,
-        val isAlreadySyncing: Boolean = false
-    )
 
     private val _state = MutableStateFlow(SyncWithPcState())
     val state = _state.onStart {

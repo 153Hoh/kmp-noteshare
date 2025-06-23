@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import info.note.app.CheckForPermission
+import info.note.app.ui.activity.CheckForPermission
 
 @Composable
 fun PermissionScreen(

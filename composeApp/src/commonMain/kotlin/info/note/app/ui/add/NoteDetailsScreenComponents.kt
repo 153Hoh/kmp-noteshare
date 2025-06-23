@@ -65,12 +65,14 @@ import info.note.app.noteShareEnterTransition
 import info.note.app.noteShareExitTransition
 import info.note.app.toDateString
 import info.note.app.toTimeString
+import info.note.app.ui.add.model.NoteDetailsState
+import info.note.app.ui.add.model.NoteState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.util.Calendar
 
 @Composable
-fun AddOrUpdateNoteScreenContent(
-    state: AddOrUpdateNoteScreenViewModel.AddNoteScreenState = AddOrUpdateNoteScreenViewModel.AddNoteScreenState(),
+fun NoteDetailsScreenContent(
+    state: NoteDetailsState = NoteDetailsState(),
     onTitleUpdated: (String) -> Unit = {},
     onMessageUpdate: (String) -> Unit = {},
     onImportantClicked: () -> Unit = {},
@@ -103,14 +105,14 @@ fun AddOrUpdateNoteScreenContent(
                 modifier = Modifier.verticalScroll(scrollState).padding(bottom = 72.dp)
             ) {
                 NoteCard(
-                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
+                    isInEditMode = state.noteState != NoteState.READ,
                     title = state.title,
                     message = state.message,
                     onTitleUpdated = onTitleUpdated,
                     onMessageUpdate = onMessageUpdate
                 )
                 TimeCard(
-                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
+                    isInEditMode = state.noteState != NoteState.READ,
                     hour = state.hour,
                     minute = state.minute,
                     dateInMillis = state.dateInMillis,
@@ -118,7 +120,7 @@ fun AddOrUpdateNoteScreenContent(
                     onEditClicked = onEditClicked
                 )
                 ImageCard(
-                    isInEditMode = state.noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
+                    isInEditMode = state.noteState != NoteState.READ,
                     image = state.image?.bitmap ?: state.tempImage?.bitmap,
                     isGalleryAvailable = isGalleryAvailable,
                     isCameraAvailable = isCameraAvailable,
@@ -695,7 +697,7 @@ fun NoteCard(
 
 @Composable
 fun BottomRow(
-    noteState: AddOrUpdateNoteScreenViewModel.NoteState = AddOrUpdateNoteScreenViewModel.NoteState.ADD,
+    noteState: NoteState = NoteState.ADD,
     modifier: Modifier = Modifier,
     addButtonTitle: String = "Add note",
     isImportant: Boolean = false,
@@ -708,7 +710,7 @@ fun BottomRow(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Button(
-            onClick = { if (noteState == AddOrUpdateNoteScreenViewModel.NoteState.READ) onEditClicked() else onAddNoteClicked() },
+            onClick = { if (noteState == NoteState.READ) onEditClicked() else onAddNoteClicked() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.background,
                 disabledContainerColor = MaterialTheme.colorScheme.background
@@ -730,7 +732,7 @@ fun BottomRow(
             }
         }
         Button(
-            enabled = noteState != AddOrUpdateNoteScreenViewModel.NoteState.READ,
+            enabled = noteState != NoteState.READ,
             onClick = onImportantClicked,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.background,
@@ -770,6 +772,6 @@ fun TimeCardPreview() {
 @Composable
 fun AddOrUpdateNoteScreenPreview() {
     MaterialTheme {
-        AddOrUpdateNoteScreenContent()
+        NoteDetailsScreenContent()
     }
 }

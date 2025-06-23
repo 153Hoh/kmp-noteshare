@@ -1,7 +1,6 @@
 package info.note.app.di
 
 import info.note.app.AndroidPlatform
-import info.note.app.MainActivityViewModel
 import info.note.app.Platform
 import info.note.app.db.RoomDatabaseBuilder
 import info.note.app.feature.image.repository.AndroidImagePickerRepository
@@ -27,8 +26,9 @@ import info.note.app.feature.sync.repository.SyncRepository
 import info.note.app.feature.sync.usecase.CheckServerUseCase
 import info.note.app.feature.sync.usecase.ShouldSyncUseCase
 import info.note.app.feature.sync.usecase.SyncNotesUseCase
-import info.note.app.ui.settings.SettingsScreenViewModel
+import info.note.app.ui.activity.MainActivityViewModel
 import info.note.app.ui.settings.home.SettingsHomeScreenViewModel
+import info.note.app.ui.settings.screen.SettingsScreenViewModel
 import info.note.app.ui.settings.sync.SyncWithPcViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel

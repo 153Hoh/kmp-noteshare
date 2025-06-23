@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import info.note.app.ui.settings.ConfirmationDialog
 import info.note.app.ui.settings.Setting
 import info.note.app.ui.settings.SyncStatus
+import info.note.app.ui.settings.home.model.SettingsHomeEvents
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -36,11 +37,11 @@ fun SettingsHomeScreen(
                 title = "Stop sync with PC",
                 onClick = {
                     viewModel.onEvent(
-                        SettingsHomeScreenViewModel.SettingsHomeEvents.ShowConfirmationDialog(
+                        SettingsHomeEvents.ShowConfirmationDialog(
                             title = "Disable note sync",
                             message = "Are you sure you want to disable syncing?",
                             onConfirmClicked = {
-                                viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.DisableSyncEvent)
+                                viewModel.onEvent(SettingsHomeEvents.DisableSyncEvent)
                             }
                         )
                     )
@@ -49,11 +50,11 @@ fun SettingsHomeScreen(
             Setting(title = "Grant permissions", onClick = onNavigateToPermissionScreen)
             Setting(title = "Delete all notes", onClick = {
                 viewModel.onEvent(
-                    SettingsHomeScreenViewModel.SettingsHomeEvents.ShowConfirmationDialog(
+                    SettingsHomeEvents.ShowConfirmationDialog(
                         title = "Delete all notes",
                         message = "Are you sure you want to delete all notes? You cannot recover them!",
                         onConfirmClicked = {
-                            viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.DeleteAllNotes)
+                            viewModel.onEvent(SettingsHomeEvents.DeleteAllNotes)
                         }
                     )
                 )
@@ -68,9 +69,9 @@ fun SettingsHomeScreen(
                     message = message,
                     onConfirmClicked = {
                         onConfirmClicked()
-                        viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.HideConfirmationDialog)
+                        viewModel.onEvent(SettingsHomeEvents.HideConfirmationDialog)
                     },
-                    onClose = { viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.HideConfirmationDialog) }
+                    onClose = { viewModel.onEvent(SettingsHomeEvents.HideConfirmationDialog) }
                 )
             }
         }

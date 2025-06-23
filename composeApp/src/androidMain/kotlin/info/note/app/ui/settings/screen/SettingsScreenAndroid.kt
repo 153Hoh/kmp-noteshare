@@ -1,4 +1,4 @@
-package info.note.app.ui.settings
+package info.note.app.ui.settings.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,13 +14,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import info.note.app.ui.settings.home.SettingsHomeScreen
-import info.note.app.ui.settings.qr.ShownSyncQrScreen
+import info.note.app.ui.settings.permission.PermissionScreen
+import info.note.app.ui.settings.screen.model.SettingsScreenEffect
+import info.note.app.ui.settings.screen.model.SettingsScreenEvent
+import info.note.app.ui.settings.sync.SyncWithPcScreen
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class SettingsScreens {
     Home,
-    ShowSyncQr
+    SyncWithPc,
+    Permission
 }
 
 @Composable
@@ -34,7 +38,7 @@ fun SettingsScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest {
             when (it) {
-                is SettingsScreenViewModel.SettingsScreenEffect.ShowSnackBar -> {
+                is SettingsScreenEffect.ShowSnackBar -> {
                     snackBarHostState.showSnackbar(it.message)
                 }
             }
@@ -45,26 +49,33 @@ fun SettingsScreen(
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) {
         NavHost(
-            modifier = modifier.fillMaxSize().padding(it),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(it),
             navController = navController,
             startDestination = SettingsScreens.Home.name
         ) {
             composable(route = SettingsScreens.Home.name) {
                 SettingsHomeScreen(
-                    onNavigateToSyncShowQrClicked = { navController.navigate(SettingsScreens.ShowSyncQr.name) }
+                    onNavigateToSyncWithPCScreen = { navController.navigate(SettingsScreens.SyncWithPc.name) },
+                    onNavigateToPermissionScreen = { navController.navigate(SettingsScreens.Permission.name) }
                 )
             }
-            composable(route = SettingsScreens.ShowSyncQr.name) {
-                ShownSyncQrScreen(
-                    onShowSnackBar = { message ->
+            composable(route = SettingsScreens.SyncWithPc.name) {
+                SyncWithPcScreen(
+                    onNavigateBack = { navController.navigate(SettingsScreens.Home.name) },
+                    onShowError = { message ->
                         viewModel.onEvent(
-                            SettingsScreenViewModel.SettingsScreenEvent.ShowSnackBar(message)
+                            SettingsScreenEvent.ShowSnackBar(message)
                         )
-                    },
-                    onNavigateBack = { navController.navigateUp() }
+                    }
+                )
+            }
+            composable(route = SettingsScreens.Permission.name) {
+                PermissionScreen(
+                    onConfirmClicked = { navController.navigateUp() }
                 )
             }
         }
     }
 }
-

@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import info.note.app.ui.settings.ConfirmationDialog
 import info.note.app.ui.settings.Setting
 import info.note.app.ui.settings.SyncStatus
+import info.note.app.ui.settings.home.model.SettingsHomeEvents
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -31,11 +32,11 @@ fun SettingsHomeScreen(
             Setting(title = "Sync with phone", onClick = onNavigateToSyncShowQrClicked)
             Setting(title = "Delete all notes", onClick = {
                 viewModel.onEvent(
-                    SettingsHomeScreenViewModel.SettingsHomeEvents.ShowConfirmationDialog(
+                    SettingsHomeEvents.ShowConfirmationDialog(
                         title = "Delete all notes",
                         message = "Are you sure you want to delete all notes? You cannot recover them!",
                         onConfirmClicked = {
-                            viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.DeleteAllNotes)
+                            viewModel.onEvent(SettingsHomeEvents.DeleteAllNotes)
                         }
                     )
                 )
@@ -50,9 +51,9 @@ fun SettingsHomeScreen(
                     message = message,
                     onConfirmClicked = {
                         onConfirmClicked()
-                        viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.HideConfirmationDialog)
+                        viewModel.onEvent(SettingsHomeEvents.HideConfirmationDialog)
                     },
-                    onClose = { viewModel.onEvent(SettingsHomeScreenViewModel.SettingsHomeEvents.HideConfirmationDialog) }
+                    onClose = { viewModel.onEvent(SettingsHomeEvents.HideConfirmationDialog) }
                 )
             }
         }

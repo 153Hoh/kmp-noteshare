@@ -15,6 +15,10 @@ import info.note.app.feature.image.usecase.IsCameraImageAvailableUseCase
 import info.note.app.feature.image.usecase.IsGalleryImageAvailableUseCase
 import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
 import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
+import info.note.app.ui.add.model.NoteDetailsEffect
+import info.note.app.ui.add.model.NoteDetailsEvent
+import info.note.app.ui.add.model.NoteDetailsState
+import info.note.app.ui.add.model.NoteState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,7 +29,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class AddOrUpdateNoteScreenViewModel(
+class NoteDetailsScreenViewModel(
     savedStateHandle: SavedStateHandle,
     private val addOrUpdateNoteUseCase: AddOrUpdateNoteUseCase,
     private val fetchNoteDetailsUseCase: FetchNoteDetailsUseCase,
@@ -36,53 +40,9 @@ class AddOrUpdateNoteScreenViewModel(
     private val fetchImageFromStorageUseCase: FetchImageFromStorageUseCase
 ) : ViewModel() {
 
-    data class AddNoteScreenState(
-        val isLoading: Boolean = true,
-        val title: String = "",
-        val message: String = "",
-        val hour: Int? = null,
-        val minute: Int? = null,
-        val dateInMillis: Long? = null,
-        val isImportant: Boolean = false,
-        val tempImage: ImageResult? = null,
-        val image: ImageResult? = null,
-        val highlightImage: Boolean = false,
-        val noteState: NoteState = NoteState.ADD
-    )
+    private val params = savedStateHandle.toRoute<NoteScreens.NoteDetailsScreen>()
 
-    enum class NoteState(val title: String) {
-        ADD("Add note"),
-        READ("Edit note"),
-        EDIT("Update note")
-    }
-
-    sealed class AddNoteScreenEffect {
-        data object NavigateBack : AddNoteScreenEffect()
-        data class ShowError(val message: String) : AddNoteScreenEffect()
-        data object PermissionRequired : AddNoteScreenEffect()
-        data class NoteTitleChanged(val noteTitle: String) : AddNoteScreenEffect()
-    }
-
-    sealed class AddNoteScreenEvent {
-        data class OnTitleUpdated(val title: String) : AddNoteScreenEvent()
-        data class OnMessageUpdated(val message: String) : AddNoteScreenEvent()
-        data class SetTimeEvent(val hour: Int, val minute: Int, val dateInMillis: Long) :
-            AddNoteScreenEvent()
-
-        data object ImportantClicked : AddNoteScreenEvent()
-        data object AddNoteEvent : AddNoteScreenEvent()
-        data object AddImageFromGalleryClicked : AddNoteScreenEvent()
-        data object AddImageFromCameraClicked : AddNoteScreenEvent()
-        data object SetImageEvent : AddNoteScreenEvent()
-        data object RemoveImage : AddNoteScreenEvent()
-        data object ImageClicked : AddNoteScreenEvent()
-        data object CloseImageHighlight : AddNoteScreenEvent()
-        data object EditClicked : AddNoteScreenEvent()
-    }
-
-    private val params = savedStateHandle.toRoute<NoteScreens.AddOrUpdateNoteScreen>()
-
-    private val _state = MutableStateFlow(AddNoteScreenState())
+    private val _state = MutableStateFlow(NoteDetailsState())
     val state = _state.onStart {
         viewModelScope.launch {
             val noteId = params.noteId
@@ -97,21 +57,21 @@ class AddOrUpdateNoteScreenViewModel(
         }
     }.stateIn(
         scope = viewModelScope,
-        initialValue = AddNoteScreenState(),
+        initialValue = NoteDetailsState(),
         started = SharingStarted.WhileSubscribed(5000L)
     )
 
-    private val _effect = MutableSharedFlow<AddNoteScreenEffect>()
+    private val _effect = MutableSharedFlow<NoteDetailsEffect>()
     val effect = _effect.asSharedFlow()
 
-    fun onEvent(event: AddNoteScreenEvent) {
+    fun onEvent(event: NoteDetailsEvent) {
         viewModelScope.launch {
             when (event) {
-                is AddNoteScreenEvent.AddNoteEvent -> addNote()
-                is AddNoteScreenEvent.OnMessageUpdated -> _state.update { it.copy(message = event.message) }
-                is AddNoteScreenEvent.OnTitleUpdated -> _state.update { it.copy(title = event.title) }
-                AddNoteScreenEvent.ImportantClicked -> setImportantState()
-                is AddNoteScreenEvent.SetTimeEvent -> _state.update {
+                is NoteDetailsEvent.AddNoteEvent -> addNote()
+                is NoteDetailsEvent.OnMessageUpdated -> _state.update { it.copy(message = event.message) }
+                is NoteDetailsEvent.OnTitleUpdated -> _state.update { it.copy(title = event.title) }
+                NoteDetailsEvent.ImportantClicked -> setImportantState()
+                is NoteDetailsEvent.SetTimeEvent -> _state.update {
                     it.copy(
                         hour = event.hour,
                         minute = event.minute,
@@ -119,25 +79,25 @@ class AddOrUpdateNoteScreenViewModel(
                     )
                 }
 
-                AddNoteScreenEvent.AddImageFromCameraClicked -> handleImage(
+                NoteDetailsEvent.AddImageFromCameraClicked -> handleImage(
                     fetchImageFromCameraUseCase()
                 )
 
-                AddNoteScreenEvent.AddImageFromGalleryClicked -> handleImage(
+                NoteDetailsEvent.AddImageFromGalleryClicked -> handleImage(
                     fetchImageFromGalleryUseCase()
                 )
 
-                AddNoteScreenEvent.SetImageEvent -> _state.update { it.copy(image = state.value.tempImage) }
-                AddNoteScreenEvent.RemoveImage -> _state.update {
+                NoteDetailsEvent.SetImageEvent -> _state.update { it.copy(image = state.value.tempImage) }
+                NoteDetailsEvent.RemoveImage -> _state.update {
                     it.copy(
                         image = null,
                         tempImage = null
                     )
                 }
 
-                AddNoteScreenEvent.ImageClicked -> _state.update { it.copy(highlightImage = true) }
-                AddNoteScreenEvent.CloseImageHighlight -> _state.update { it.copy(highlightImage = false) }
-                AddNoteScreenEvent.EditClicked -> updateNoteState(NoteState.EDIT)
+                NoteDetailsEvent.ImageClicked -> _state.update { it.copy(highlightImage = true) }
+                NoteDetailsEvent.CloseImageHighlight -> _state.update { it.copy(highlightImage = false) }
+                NoteDetailsEvent.EditClicked -> updateNoteState(NoteState.EDIT)
             }
         }
     }
@@ -152,7 +112,7 @@ class AddOrUpdateNoteScreenViewModel(
 
     private suspend fun addNote() {
         if (state.value.title.isEmpty()) {
-            _effect.emit(AddNoteScreenEffect.ShowError("Cannot add a note without a title!"))
+            _effect.emit(NoteDetailsEffect.ShowError("Cannot add a note without a title!"))
             return
         }
 
@@ -167,10 +127,10 @@ class AddOrUpdateNoteScreenViewModel(
                 dateInMillis = dateInMillis,
                 image = image
             ).onSuccess {
-                _effect.emit(AddNoteScreenEffect.NavigateBack)
+                _effect.emit(NoteDetailsEffect.NavigateBack)
             }.onFailure {
                 it.printStackTrace()
-                _effect.emit(AddNoteScreenEffect.ShowError("Cannot add a note!"))
+                _effect.emit(NoteDetailsEffect.ShowError("Cannot add a note!"))
             }
         }
     }
@@ -180,9 +140,9 @@ class AddOrUpdateNoteScreenViewModel(
             _state.update { it.copy(tempImage = result) }
         }.onFailure {
             when (it) {
-                is NoPermissionException -> _effect.emit(AddNoteScreenEffect.PermissionRequired)
-                is CapabilityNotSupportedException -> _effect.emit(AddNoteScreenEffect.ShowError("This device does not support this capability!"))
-                else -> _effect.emit(AddNoteScreenEffect.ShowError("Cannot load image!"))
+                is NoPermissionException -> _effect.emit(NoteDetailsEffect.PermissionRequired)
+                is CapabilityNotSupportedException -> _effect.emit(NoteDetailsEffect.ShowError("This device does not support this capability!"))
+                else -> _effect.emit(NoteDetailsEffect.ShowError("Cannot load image!"))
             }
         }
     }
@@ -228,6 +188,6 @@ class AddOrUpdateNoteScreenViewModel(
             NoteState.READ -> "Read note"
             NoteState.EDIT -> "Edit note"
         }
-        _effect.emit(AddNoteScreenEffect.NoteTitleChanged(noteTitle = newNoteTitle))
+        _effect.emit(NoteDetailsEffect.NoteTitleChanged(noteTitle = newNoteTitle))
     }
 }

@@ -6,6 +6,8 @@ import info.note.app.feature.note.usecase.DeleteAllNotesUseCase
 import info.note.app.feature.preferences.usecase.FetchLastSyncStateUseCase
 import info.note.app.feature.preferences.usecase.FetchLastSyncTimeUseCase
 import info.note.app.ui.settings.ConfirmationDialogState
+import info.note.app.ui.settings.home.model.SettingsHomeEvents
+import info.note.app.ui.settings.home.model.SettingsHomeState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -18,24 +20,6 @@ class SettingsHomeScreenViewModel(
     private val fetchLastSyncTimeUseCase: FetchLastSyncTimeUseCase,
     private val deleteAllNotesUseCase: DeleteAllNotesUseCase
 ) : ViewModel() {
-
-    data class SettingsHomeState(
-        val syncStatus: Boolean = false,
-        val lastSyncTime: Long = 0L,
-        val confirmationDialogState: ConfirmationDialogState = ConfirmationDialogState()
-    )
-
-    sealed class SettingsHomeEvents {
-        data class ShowConfirmationDialog(
-            val title: String,
-            val message: String,
-            val onConfirmClicked: () -> Unit
-        ) : SettingsHomeEvents()
-
-        data object HideConfirmationDialog : SettingsHomeEvents()
-
-        data object DeleteAllNotes : SettingsHomeEvents()
-    }
 
     private val _state = MutableStateFlow(SettingsHomeState())
     val state = _state.onStart {

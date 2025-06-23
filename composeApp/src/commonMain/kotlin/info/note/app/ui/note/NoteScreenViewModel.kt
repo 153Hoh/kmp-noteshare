@@ -2,9 +2,11 @@ package info.note.app.ui.note
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.feature.note.model.Note
 import info.note.app.feature.note.usecase.FetchNotesUseCase
 import info.note.app.feature.note.usecase.RemoveNoteUseCase
+import info.note.app.ui.note.model.NoteEffect
+import info.note.app.ui.note.model.NoteScreenEvent
+import info.note.app.ui.note.model.NoteScreenState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,21 +20,6 @@ class NoteScreenViewModel(
     private val fetchNotesUseCase: FetchNotesUseCase,
     private val removeNoteUseCase: RemoveNoteUseCase
 ) : ViewModel() {
-
-    data class NoteScreenState(
-        val isLoading: Boolean = true,
-        val noteList: List<Note> = emptyList()
-    )
-
-    sealed class NoteEffect {
-        data class NavigateToNote(val noteId: String) : NoteEffect()
-        data class ShowError(val message: String) : NoteEffect()
-    }
-
-    sealed class NoteScreenEvent {
-        data class NoteClicked(val noteId: String) : NoteScreenEvent()
-        data class RemoveNote(val noteId: String) : NoteScreenEvent()
-    }
 
     private val _state = MutableStateFlow(NoteScreenState())
     val state = _state.onStart {

@@ -10,7 +10,9 @@ import androidx.compose.ui.window.rememberWindowState
 import info.note.app.di.coreModule
 import info.note.app.feature.preferences.usecase.SetLastSyncStateUseCase
 import info.note.app.server.SyncServerController
-import info.note.app.ui.settings.SettingsScreen
+import info.note.app.ui.main.MainViewModel
+import info.note.app.ui.main.model.MainEvent
+import info.note.app.ui.settings.screen.SettingsScreen
 import io.github.vinceglb.filekit.FileKit
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
@@ -52,7 +54,7 @@ fun main() = application {
             settingsContent = { SettingsScreen() },
             onThemeStateChanged = {
                 viewModel.onEvent(
-                    MainViewModel.MainEvent.ThemeStateChanged(
+                    MainEvent.ThemeStateChanged(
                         it
                     )
                 )

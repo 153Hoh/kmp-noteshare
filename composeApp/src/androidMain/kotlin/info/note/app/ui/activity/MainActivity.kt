@@ -1,4 +1,4 @@
-package info.note.app
+package info.note.app.ui.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,9 +25,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import info.note.app.App
 import info.note.app.feature.sync.repository.NoteSyncController
-import info.note.app.ui.settings.SettingsScreen
+import info.note.app.ui.activity.model.MainEvent
 import info.note.app.ui.settings.permission.PermissionScreen
+import info.note.app.ui.settings.screen.SettingsScreen
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import kotlinx.coroutines.launch
@@ -63,7 +65,7 @@ class MainActivity : ComponentActivity() {
                 permissionScreen = { PermissionScreen(it) },
                 onThemeStateChanged = {
                     viewModel.onEvent(
-                        MainActivityViewModel.MainEvent.ThemeStateChanged(
+                        MainEvent.ThemeStateChanged(
                             it
                         )
                     )

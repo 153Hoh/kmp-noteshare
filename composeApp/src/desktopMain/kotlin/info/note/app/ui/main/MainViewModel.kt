@@ -1,10 +1,11 @@
-package info.note.app
+package info.note.app.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import info.note.app.feature.preferences.usecase.FetchThemeStateUseCase
 import info.note.app.feature.preferences.usecase.SetThemeStateUseCase
-import info.note.app.ui.theme.ThemeState
+import info.note.app.ui.main.model.MainEvent
+import info.note.app.ui.main.model.MainState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -12,18 +13,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainActivityViewModel(
+class MainViewModel(
     private val fetchThemeStateUseCase: FetchThemeStateUseCase,
     private val setThemeStateUseCase: SetThemeStateUseCase
 ) : ViewModel() {
-
-    data class MainState(
-        val themeState: ThemeState = ThemeState.AUTO
-    )
-
-    sealed class MainEvent {
-        data class ThemeStateChanged(val themeState: ThemeState) : MainEvent()
-    }
 
     private val _state = MutableStateFlow(MainState())
     val state = _state.onStart {

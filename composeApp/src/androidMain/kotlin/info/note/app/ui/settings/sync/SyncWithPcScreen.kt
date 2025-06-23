@@ -21,8 +21,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.CompoundBarcodeView
-import info.note.app.CheckForPermission
+import info.note.app.ui.activity.CheckForPermission
 import info.note.app.ui.settings.AlreadySyncingCard
+import info.note.app.ui.settings.sync.model.SyncWithPcEffect
+import info.note.app.ui.settings.sync.model.SyncWithPcEvent
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.androidx.compose.koinViewModel
@@ -38,7 +40,7 @@ fun SyncWithPcScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest {
             when (it) {
-                is SyncWithPcViewModel.SyncWithPcEffect.ShowError -> onShowError(it.message)
+                is SyncWithPcEffect.ShowError -> onShowError(it.message)
             }
         }
     }
@@ -54,7 +56,7 @@ fun SyncWithPcScreen(
             if (state.value.isAlreadySyncing) {
                 AlreadySyncingCard(
                     onCancelClicked = onNavigateBack,
-                    onDisconnectClicked = { viewModel.onEvent(SyncWithPcViewModel.SyncWithPcEvent.DisconnectEvent) }
+                    onDisconnectClicked = { viewModel.onEvent(SyncWithPcEvent.DisconnectEvent) }
                 )
             } else {
                 if (state.value.isScanning) {
@@ -70,7 +72,7 @@ fun SyncWithPcScreen(
                                 decodeContinuous { result ->
                                     if (state.value.isScanning) {
                                         viewModel.onEvent(
-                                            SyncWithPcViewModel.SyncWithPcEvent.QrResult(
+                                            SyncWithPcEvent.QrResult(
                                                 result.text
                                             )
                                         )

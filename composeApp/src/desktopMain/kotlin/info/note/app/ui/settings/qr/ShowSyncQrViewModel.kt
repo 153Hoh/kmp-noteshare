@@ -2,9 +2,12 @@ package info.note.app.ui.settings.qr
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.note.usecase.FetchDeviceIpUseCase
+import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
+import info.note.app.ui.settings.qr.model.ShowSyncQrEffect
+import info.note.app.ui.settings.qr.model.ShowSyncQrEvent
+import info.note.app.ui.settings.qr.model.ShowSyncQrState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,20 +24,6 @@ class ShowSyncQrViewModel(
     private val fetchDeviceIpUseCase: FetchDeviceIpUseCase,
     private val disconnectSyncUseCase: DisconnectSyncUseCase
 ) : ViewModel() {
-
-    sealed class ShowSyncQrEvent {
-        data object DisconnectEvent : ShowSyncQrEvent()
-    }
-
-    sealed class ShowSyncQrEffect {
-        data class ShowError(val message: String) : ShowSyncQrEffect()
-    }
-
-    data class ShowSyncQrState(
-        val isLoading: Boolean = true,
-        val isAlreadySyncing: Boolean = false,
-        val deviceIp: String = ""
-    )
 
     private val _state = MutableStateFlow(ShowSyncQrState())
     val state = _state.onStart {

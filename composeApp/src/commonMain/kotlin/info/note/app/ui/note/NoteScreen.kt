@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import info.note.app.ui.note.model.NoteEffect
+import info.note.app.ui.note.model.NoteScreenEvent
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -31,8 +33,8 @@ fun NoteScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest {
             when (it) {
-                is NoteScreenViewModel.NoteEffect.NavigateToNote -> onNavigateToNote(it.noteId)
-                is NoteScreenViewModel.NoteEffect.ShowError -> onShowSnackBar(it.message)
+                is NoteEffect.NavigateToNote -> onNavigateToNote(it.noteId)
+                is NoteEffect.ShowError -> onShowSnackBar(it.message)
             }
         }
     }
@@ -44,9 +46,9 @@ fun NoteScreen(
     ) {
         NoteList(
             noteList = state.value.noteList,
-            onNoteClicked = { viewModel.onEvent(NoteScreenViewModel.NoteScreenEvent.NoteClicked(it)) },
+            onNoteClicked = { viewModel.onEvent(NoteScreenEvent.NoteClicked(it)) },
             onRemoveNoteClicked = {
-                viewModel.onEvent(NoteScreenViewModel.NoteScreenEvent.RemoveNote(it))
+                viewModel.onEvent(NoteScreenEvent.RemoveNote(it))
             }
         )
         FilledIconButton(

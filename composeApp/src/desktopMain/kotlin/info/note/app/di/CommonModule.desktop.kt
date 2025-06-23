@@ -1,7 +1,6 @@
 package info.note.app.di
 
 import info.note.app.JVMPlatform
-import info.note.app.MainViewModel
 import info.note.app.Platform
 import info.note.app.db.RoomDatabaseBuilder
 import info.note.app.feature.file.usecase.CreateCheckFileIdsResponseUseCase
@@ -25,9 +24,10 @@ import info.note.app.feature.preferences.usecase.SetLastSyncStateUseCase
 import info.note.app.feature.preferences.usecase.SetThemeStateUseCase
 import info.note.app.server.SyncServerController
 import info.note.app.server.routing.ServerRoutes
-import info.note.app.ui.settings.SettingsScreenViewModel
+import info.note.app.ui.main.MainViewModel
 import info.note.app.ui.settings.home.SettingsHomeScreenViewModel
 import info.note.app.ui.settings.qr.ShowSyncQrViewModel
+import info.note.app.ui.settings.screen.SettingsScreenViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
