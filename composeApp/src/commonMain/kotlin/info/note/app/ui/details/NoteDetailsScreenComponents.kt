@@ -1,4 +1,4 @@
-package info.note.app.ui.add
+package info.note.app.ui.details
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -65,8 +65,8 @@ import info.note.app.noteShareEnterTransition
 import info.note.app.noteShareExitTransition
 import info.note.app.toDateString
 import info.note.app.toTimeString
-import info.note.app.ui.add.model.NoteDetailsState
-import info.note.app.ui.add.model.NoteState
+import info.note.app.ui.details.model.NoteDetailsState
+import info.note.app.ui.details.model.NoteState
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.util.Calendar
 

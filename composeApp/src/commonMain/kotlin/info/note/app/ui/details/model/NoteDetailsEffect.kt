@@ -1,4 +1,4 @@
-package info.note.app.ui.add.model
+package info.note.app.ui.details.model
 
 sealed class NoteDetailsEffect {
     data object NavigateBack : NoteDetailsEffect()

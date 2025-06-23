@@ -92,6 +92,8 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktorSer
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorServerCore" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorServerCore" }
 ktor-server-partial-content = { module = "io.ktor:ktor-server-partial-content", version.ref = "ktorServerCore" }
+ktor-websocket = { module = "io.ktor:ktor-server-websockets", version.ref = "ktorServerCore" }
+ktor-client-websocket = { module = "io.ktor:ktor-client-websockets", version.ref = "ktorServerCore" }
 logging = { module = "com.diamondedge:logging", version.ref = "logging" }
 material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }

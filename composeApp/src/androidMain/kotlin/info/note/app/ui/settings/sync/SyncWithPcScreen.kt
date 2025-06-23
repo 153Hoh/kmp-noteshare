@@ -2,6 +2,7 @@ package info.note.app.ui.settings.sync
 
 import android.Manifest
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -45,9 +46,16 @@ fun SyncWithPcScreen(
         }
     }
 
-    CheckForPermission(
-        listOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_EXTERNAL_STORAGE)
-    ) {
+    val permissionList = listOf(
+        Manifest.permission.CAMERA,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+    )
+
+    CheckForPermission(permissionList) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,

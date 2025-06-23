@@ -121,16 +121,24 @@ fun NoteList(
     onNoteClicked: (String) -> Unit = {},
     onRemoveNoteClicked: (String) -> Unit = {}
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp),
-    ) {
-        items(noteList) { note ->
-            Note(
-                note = note,
-                onNoteClicked = onNoteClicked,
-                onRemoveNoteClicked = onRemoveNoteClicked
-            )
+    if (noteList.isEmpty()) {
+        Text(
+            modifier = Modifier.fillMaxSize(),
+            text = "There are no notes yet!",
+            textAlign = TextAlign.Center
+        )
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(4.dp),
+        ) {
+            items(noteList) { note ->
+                Note(
+                    note = note,
+                    onNoteClicked = onNoteClicked,
+                    onRemoveNoteClicked = onRemoveNoteClicked
+                )
+            }
         }
     }
 }

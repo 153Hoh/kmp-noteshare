@@ -1,10 +1,10 @@
-package info.note.app.ui.add
+package info.note.app.ui.details
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import info.note.app.ui.add.model.NoteDetailsEffect
-import info.note.app.ui.add.model.NoteDetailsEvent
+import info.note.app.ui.details.model.NoteDetailsEffect
+import info.note.app.ui.details.model.NoteDetailsEvent
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 

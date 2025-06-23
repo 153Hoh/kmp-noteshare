@@ -13,17 +13,22 @@ import info.note.app.feature.preferences.repository.PreferencesRepository
 import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.preferences.usecase.FetchLastSyncStateUseCase
 import info.note.app.feature.preferences.usecase.FetchLastSyncTimeUseCase
+import info.note.app.feature.preferences.usecase.FetchSyncIpUseCase
 import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
 import info.note.app.feature.preferences.usecase.FetchThemeStateUseCase
 import info.note.app.feature.preferences.usecase.RemoveSyncIpUseCase
 import info.note.app.feature.preferences.usecase.SaveSyncStateUseCase
-import info.note.app.feature.preferences.usecase.SetSyncServerIpUseCase
 import info.note.app.feature.preferences.usecase.SetThemeStateUseCase
 import info.note.app.feature.sync.repository.KtorSyncRepository
 import info.note.app.feature.sync.repository.NoteSyncController
 import info.note.app.feature.sync.repository.NoteSyncControllerImpl
 import info.note.app.feature.sync.repository.SyncRepository
-import info.note.app.feature.sync.usecase.CheckServerUseCase
+import info.note.app.feature.sync.repository.websocket.WebSocketController
+import info.note.app.feature.sync.repository.websocket.WebSocketControllerImpl
+import info.note.app.feature.sync.repository.websocket.WebSocketMessageHandler
+import info.note.app.feature.sync.repository.websocket.WebSocketMessageHandlerImpl
+import info.note.app.feature.sync.repository.websocket.usecase.FetchSyncWebSocketMessagesFromServerUseCase
+import info.note.app.feature.sync.usecase.CheckAndConnectToServerUseCase
 import info.note.app.feature.sync.usecase.ShouldSyncUseCase
 import info.note.app.feature.sync.usecase.SyncNotesUseCase
 import info.note.app.ui.activity.MainActivityViewModel
@@ -42,14 +47,16 @@ actual fun platformModule() = module {
     single<PreferencesRepository> { AppPreferencesRepository(androidContext()) }
     single<Platform> { AndroidPlatform(androidContext()) }
 
-    single<SyncRepository> { KtorSyncRepository(get()) }
-    single<NoteSyncController> { NoteSyncControllerImpl(get(), get(), get(), get(), get()) }
+    single<SyncRepository> { KtorSyncRepository() }
+    single<NoteSyncController> { NoteSyncControllerImpl(get(), get(), get(), get(), get(), get()) }
+    single<WebSocketMessageHandler> { WebSocketMessageHandlerImpl() }
+    single<WebSocketController> { WebSocketControllerImpl(get()) }
 
     single { GetAllNotesUseCase(get()) }
     single { RefreshNotesUseCase(get()) }
     single { SaveSyncStateUseCase(get()) }
     single { SyncNotesUseCase(get(), get(), get()) }
-    single { ShouldSyncUseCase(get(), get(), get()) }
+    single { ShouldSyncUseCase(get(), get()) }
     single { FetchLastSyncStateUseCase(get()) }
     single { RemoveSyncIpUseCase(get()) }
     single { DisconnectSyncUseCase(get()) }
@@ -57,12 +64,12 @@ actual fun platformModule() = module {
     single { FetchLastSyncTimeUseCase(get()) }
     single { FetchThemeStateUseCase(get()) }
     single { SetThemeStateUseCase(get()) }
-
-    single { CheckServerUseCase(get()) }
-    single { SetSyncServerIpUseCase(get()) }
+    single { CheckAndConnectToServerUseCase(get(), get(), get()) }
+    single { FetchSyncWebSocketMessagesFromServerUseCase(get()) }
+    single { FetchSyncIpUseCase(get()) }
 
     viewModel { SettingsHomeScreenViewModel(get(), get(), get(), get()) }
-    viewModel { SyncWithPcViewModel(get(), get(), get(), get()) }
+    viewModel { SyncWithPcViewModel(get(), get(), get()) }
     viewModel { SettingsScreenViewModel() }
     viewModel { MainActivityViewModel(get(), get()) }
 }

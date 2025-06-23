@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import info.note.app.feature.preferences.usecase.DisconnectSyncUseCase
 import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
-import info.note.app.feature.preferences.usecase.SetSyncServerIpUseCase
-import info.note.app.feature.sync.usecase.CheckServerUseCase
+import info.note.app.feature.sync.usecase.CheckAndConnectToServerUseCase
 import info.note.app.ui.settings.sync.model.SyncWithPcEffect
 import info.note.app.ui.settings.sync.model.SyncWithPcEvent
 import info.note.app.ui.settings.sync.model.SyncWithPcState
@@ -19,8 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SyncWithPcViewModel(
-    private val setSyncServerIpUseCase: SetSyncServerIpUseCase,
-    private val checkServerUseCase: CheckServerUseCase,
+    private val checkAndConnectToServerUseCase: CheckAndConnectToServerUseCase,
     private val fetchSyncKeyUseCase: FetchSyncKeyUseCase,
     private val disconnectSyncUseCase: DisconnectSyncUseCase
 ) : ViewModel() {
@@ -56,9 +54,8 @@ class SyncWithPcViewModel(
         qr ?: return
 
         _state.update { it.copy(isScanning = false, connecting = true) }
-        checkServerUseCase(qr).onSuccess {
+        checkAndConnectToServerUseCase(qr).onSuccess {
             _state.update { it.copy(connecting = false, connected = true) }
-            setSyncServerIpUseCase(qr)
         }.onFailure {
             _state.update { it.copy(connecting = false, connected = false, connectError = true) }
         }

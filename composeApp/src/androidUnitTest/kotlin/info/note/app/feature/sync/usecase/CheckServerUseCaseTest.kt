@@ -10,12 +10,12 @@ import kotlinx.coroutines.test.runTest
 
 class CheckServerUseCaseTest : StringSpec({
 
-    lateinit var sut: CheckServerUseCase
+    lateinit var sut: CheckAndConnectToServerUseCase
 
     val syncRepository: SyncRepository = mockk()
 
     beforeEach {
-        sut = CheckServerUseCase(syncRepository)
+        sut = CheckAndConnectToServerUseCase(syncRepository)
 
         coEvery { syncRepository.connectToServer("ip") } returns Result.success(Unit)
     }
