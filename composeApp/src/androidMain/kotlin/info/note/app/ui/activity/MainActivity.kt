@@ -26,7 +26,9 @@ import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import info.note.app.App
+import info.note.app.feature.preferences.usecase.FetchSyncIpUseCase
 import info.note.app.feature.sync.repository.NoteSyncController
+import info.note.app.feature.sync.repository.websocket.WebSocketController
 import info.note.app.ui.activity.model.MainEvent
 import info.note.app.ui.settings.permission.PermissionScreen
 import info.note.app.ui.settings.screen.SettingsScreen
@@ -40,14 +42,21 @@ class MainActivity : ComponentActivity() {
 
     private val noteSyncHandler: NoteSyncController by inject()
     private val viewModel: MainActivityViewModel by viewModel()
+    private val webSocketController: WebSocketController by inject()
+    private val fetchSyncIpUseCase: FetchSyncIpUseCase by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
-            noteSyncHandler.startSync()
+            val serverIp = fetchSyncIpUseCase()
+            if (serverIp.isNotEmpty()) {
+                webSocketController.start(serverIp)
+            }
         }
+
+        noteSyncHandler.startSync()
 
         FileKit.init(this)
 
@@ -76,7 +85,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        noteSyncHandler.stopSync()
+        noteSyncHandler.stop()
+        webSocketController.stop()
         super.onDestroy()
     }
 }
@@ -93,11 +103,11 @@ fun CheckForPermission(
     permissions: List<String> = emptyList(),
     isGrantedContent: @Composable () -> Unit
 ) {
-    val cameraPermissionState = rememberMultiplePermissionsState(
+    val permissionState = rememberMultiplePermissionsState(
         permissions
     )
 
-    if (cameraPermissionState.allPermissionsGranted) {
+    if (permissionState.allPermissionsGranted) {
         isGrantedContent()
     } else {
         Column(
@@ -107,14 +117,14 @@ fun CheckForPermission(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val textToShow = if (cameraPermissionState.shouldShowRationale) {
+            val textToShow = if (permissionState.shouldShowRationale) {
                 "Without the camera or the Image access permission you cannot sync your notes to your PC. Please grant the permissions."
             } else {
                 "Camera and Image access permission is required to use all the features of NoteShare, please grant the permissions!"
             }
             Text(text = textToShow, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Button(onClick = { cameraPermissionState.launchMultiplePermissionRequest() }) {
+            Button(onClick = { permissionState.launchMultiplePermissionRequest() }) {
                 Text("Request permission")
             }
         }

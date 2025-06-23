@@ -1,9 +1,9 @@
 package info.note.app.feature.sync.usecase
 
 import com.diamondedge.logging.logging
-import info.note.app.feature.preferences.repository.PreferencesRepository
-import info.note.app.feature.note.model.Note
 import info.note.app.feature.file.repository.FileRepository
+import info.note.app.feature.note.model.Note
+import info.note.app.feature.preferences.repository.PreferencesRepository
 import info.note.app.feature.sync.repository.SyncRepository
 
 class SyncNotesUseCase(
@@ -18,28 +18,35 @@ class SyncNotesUseCase(
     suspend operator fun invoke(noteList: List<Note>): Result<List<Note>> {
         preferencesRepository.setLastSyncTime(System.currentTimeMillis())
 
-        return syncRepository.sync(noteList).onSuccess {
-            handleImageFiles(noteList)
+        val serverIp = preferencesRepository.getSyncServerIp()
+        val syncKey = preferencesRepository.getSyncKey()
+
+        return syncRepository.sync(noteList, serverIp, syncKey).onSuccess {
+            handleImageFiles(noteList, serverIp, syncKey)
         }
     }
 
-    private suspend fun handleImageFiles(noteList: List<Note>) {
-        val fileIds = noteList.map { it.imageId }
+    private suspend fun handleImageFiles(noteList: List<Note>, serverIp: String, syncKey: String) {
+        val fileIds = noteList.map { it.imageId }.filter { it.isNotEmpty() }
 
         if (fileIds.isEmpty()) {
             return
         }
 
-        syncRepository.checkFileIds(fileIds).onSuccess { checkFilesResult ->
-            handleUpload(noteList, checkFilesResult.uploadList)
-            handleDownload(checkFilesResult.downloadList)
+        syncRepository.checkFileIds(fileIds, serverIp, syncKey).onSuccess { checkFilesResult ->
+            handleUpload(noteList, checkFilesResult.uploadList, serverIp)
+            handleDownload(checkFilesResult.downloadList, serverIp)
         }.onFailure {
             it.printStackTrace()
             logging().error { "Error while uploading!" }
         }
     }
 
-    private suspend fun handleUpload(noteList: List<Note>, uploadList: List<String>) {
+    private suspend fun handleUpload(
+        noteList: List<Note>,
+        uploadList: List<String>,
+        serverIp: String
+    ) {
         val imageFileList =
             noteList
                 .filter { uploadList.contains(it.imageId) }
@@ -51,7 +58,7 @@ class SyncNotesUseCase(
             return
         }
 
-        syncRepository.uploadFiles(imageFileList).onSuccess { result ->
+        syncRepository.uploadFiles(imageFileList, serverIp).onSuccess { result ->
             result.uploadResultMap.forEach {
                 logging().info { "Upload result: ${it.key} ${it.value}" }
             }
@@ -61,7 +68,8 @@ class SyncNotesUseCase(
                     noteList,
                     result.uploadResultMap
                         .filter { !it.value }
-                        .map { it.key }
+                        .map { it.key },
+                    serverIp
                 )
             }
         }.onFailure {
@@ -70,14 +78,14 @@ class SyncNotesUseCase(
         }
     }
 
-    private suspend fun handleDownload(downloadList: List<String>) {
+    private suspend fun handleDownload(downloadList: List<String>, serverIp: String) {
         logging().info { "Downloading files (${downloadList.size})" }
 
         if (downloadList.isEmpty()) {
             return
         }
 
-        syncRepository.downloadFiles(downloadList, fileRepository.parentFolder)
+        syncRepository.downloadFiles(downloadList, fileRepository.parentFolder, serverIp)
             .onSuccess { result ->
                 result.downloadResultsMap.forEach {
                     logging().info { "download result: ${it.key} ${it.value}" }
@@ -87,7 +95,8 @@ class SyncNotesUseCase(
                     handleDownload(
                         result.downloadResultsMap
                             .filter { !it.value }
-                            .map { it.key }
+                            .map { it.key },
+                        serverIp
                     )
                 }
             }

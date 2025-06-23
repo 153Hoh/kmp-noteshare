@@ -4,10 +4,15 @@ import com.diamondedge.logging.logging
 import info.note.app.feature.note.usecase.GetAllNotesUseCase
 import info.note.app.feature.note.usecase.RefreshNotesUseCase
 import info.note.app.feature.preferences.usecase.SaveSyncStateUseCase
+import info.note.app.feature.sync.repository.websocket.usecase.FetchSyncWebSocketMessagesFromServerUseCase
 import info.note.app.feature.sync.usecase.ShouldSyncUseCase
 import info.note.app.feature.sync.usecase.SyncNotesUseCase
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class NoteSyncControllerImpl(
@@ -15,27 +20,31 @@ class NoteSyncControllerImpl(
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val refreshNotesUseCase: RefreshNotesUseCase,
     private val saveSyncStateUseCase: SaveSyncStateUseCase,
-    private val shouldSyncUseCase: ShouldSyncUseCase
+    private val shouldSyncUseCase: ShouldSyncUseCase,
+    private val fetchSyncWebSocketMessagesFromServerUseCase: FetchSyncWebSocketMessagesFromServerUseCase
 ) : NoteSyncController {
 
-    private var isRunning = true
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override suspend fun startSync() {
-        saveSyncStateUseCase(false)
-        coroutineScope {
-            launch {
-                while (isRunning) {
-                    if (shouldSyncUseCase()) {
-                        syncNotes()
-                    }
-                    delay(500L)
+    override fun startSync() {
+        scope.launch {
+            fetchSyncWebSocketMessagesFromServerUseCase().collect {
+                syncNotes()
+            }
+        }
+        scope.launch {
+            saveSyncStateUseCase(false)
+            while (isActive) {
+                if (shouldSyncUseCase()) {
+                    syncNotes()
                 }
+                delay(500L)
             }
         }
     }
 
-    override fun stopSync() {
-        isRunning = false
+    override fun stop() {
+        scope.cancel()
     }
 
     private suspend fun syncNotes() {

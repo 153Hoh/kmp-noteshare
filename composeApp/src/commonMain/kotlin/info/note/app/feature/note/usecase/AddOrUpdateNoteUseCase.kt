@@ -3,8 +3,8 @@ package info.note.app.feature.note.usecase
 import info.note.app.feature.file.repository.FileRepository
 import info.note.app.feature.file.repository.exception.FileSaveException
 import info.note.app.feature.image.model.ImageResult
-import info.note.app.feature.note.repository.NoteRepository
 import info.note.app.feature.note.repository.NoteEntity
+import info.note.app.feature.note.repository.NoteRepository
 import java.util.Calendar
 import java.util.UUID
 
@@ -45,7 +45,7 @@ class AddOrUpdateNoteUseCase(
         val note =
             NoteEntity(
                 noteId = id,
-                title = title,
+                title = title.replaceFirstChar { it.uppercaseChar() },
                 creationTime = creationTime,
                 message = message,
                 dueDate = dueDate,

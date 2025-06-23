@@ -2,9 +2,9 @@ package info.note.app.feature.preferences.usecase
 
 import info.note.app.feature.preferences.repository.PreferencesRepository
 
-class SetSyncServerIpUseCase(
+class FetchSyncIpUseCase(
     private val preferencesRepository: PreferencesRepository
 ) {
 
-    suspend operator fun invoke(ip: String) = preferencesRepository.setSyncServerIp(ip)
+    suspend operator fun invoke() = preferencesRepository.getSyncServerIp()
 }

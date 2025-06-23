@@ -1,13 +1,12 @@
 package info.note.app.feature.sync.repository
 
-import info.note.app.feature.preferences.repository.PreferencesRepository
+import info.note.app.feature.note.model.Note
 import info.note.app.feature.sync.model.CheckFilesRequestBody
 import info.note.app.feature.sync.model.CheckFilesResponseBody
 import info.note.app.feature.sync.model.CheckFilesResult
 import info.note.app.feature.sync.model.ConnectResponseBody
 import info.note.app.feature.sync.model.DownloadResult
 import info.note.app.feature.sync.model.ImageUploadResult
-import info.note.app.feature.note.model.Note
 import info.note.app.feature.sync.model.SyncRequestBody
 import info.note.app.feature.sync.model.SyncResponseBody
 import info.note.app.feature.sync.model.UploadRequest
@@ -36,9 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class KtorSyncRepository(
-    private val preferencesRepository: PreferencesRepository
-) : SyncRepository {
+class KtorSyncRepository : SyncRepository {
 
     private val client = HttpClient {
         install(ContentNegotiation) {
@@ -46,55 +43,22 @@ class KtorSyncRepository(
         }
     }
 
-    override suspend fun connectToServer(ip: String): Result<Unit> = withContext(Dispatchers.IO) {
+    override suspend fun connectToServer(ip: String): Result<String> = withContext(Dispatchers.IO) {
         val response = client.get("http://$ip:8080/connect")
         return@withContext if (response.status.value in 200..299) {
             val connectResponse = response.body<ConnectResponseBody>()
-            preferencesRepository.setSyncKey(connectResponse.syncKey)
-            Result.success(Unit)
+            Result.success(connectResponse.syncKey)
         } else {
             Result.failure(ServerUnavailableException())
         }
     }
 
-    override suspend fun shouldSync(): Result<Unit> = withContext(Dispatchers.IO) {
-        val serverIp = preferencesRepository.getSyncServerIp()
-        val syncKey = preferencesRepository.getSyncKey()
-
-        if (syncKey.isEmpty()) {
-            return@withContext Result.failure(NotConnectedException())
-        }
-
-        if (serverIp.isEmpty()) {
-            return@withContext Result.failure(ServerUnavailableException())
-        }
-
-        runCatching {
-            val response = client.get("http://$serverIp:8080/shouldSync") {
-                url {
-                    headers.append(SYNC_KEY, syncKey)
-                }
-            }
-
-            if (response.headers[SYNC_KEY] != syncKey) {
-                return@withContext Result.failure(InvalidResponseException())
-            }
-
-            return@withContext if (response.status.value in 200..299) {
-                Result.success(Unit)
-            } else {
-                Result.failure(ServerUnavailableException())
-            }
-        }.onFailure {
-            return@withContext Result.failure(ServerErrorException())
-        }
-    }
-
-    override suspend fun sync(noteList: List<Note>): Result<List<Note>> =
+    override suspend fun sync(
+        noteList: List<Note>,
+        serverIp: String,
+        syncKey: String
+    ): Result<List<Note>> =
         withContext(Dispatchers.IO) {
-            val serverIp = preferencesRepository.getSyncServerIp()
-            val syncKey = preferencesRepository.getSyncKey()
-
             if (syncKey.isEmpty()) {
                 return@withContext Result.failure(NotConnectedException())
             }
@@ -127,11 +91,12 @@ class KtorSyncRepository(
             }
         }
 
-    override suspend fun checkFileIds(fileIds: List<String>): Result<CheckFilesResult> =
+    override suspend fun checkFileIds(
+        fileIds: List<String>,
+        serverIp: String,
+        syncKey: String
+    ): Result<CheckFilesResult> =
         withContext(Dispatchers.IO) {
-            val serverIp = preferencesRepository.getSyncServerIp()
-            val syncKey = preferencesRepository.getSyncKey()
-
             if (syncKey.isEmpty()) {
                 return@withContext Result.failure(NotConnectedException())
             }
@@ -165,10 +130,11 @@ class KtorSyncRepository(
             }
         }
 
-    override suspend fun uploadFiles(uploadList: List<PlatformFile>): Result<ImageUploadResult> =
+    override suspend fun uploadFiles(
+        uploadList: List<PlatformFile>,
+        serverIp: String
+    ): Result<ImageUploadResult> =
         withContext(Dispatchers.IO) {
-            val serverIp = preferencesRepository.getSyncServerIp()
-
             if (serverIp.isEmpty()) {
                 return@withContext Result.failure(ServerUnavailableException())
             }
@@ -206,11 +172,10 @@ class KtorSyncRepository(
 
     override suspend fun downloadFiles(
         fileIds: List<String>,
-        downloadFolder: String
+        downloadFolder: String,
+        serverIp: String
     ): Result<DownloadResult> =
         withContext(Dispatchers.IO) {
-            val serverIp = preferencesRepository.getSyncServerIp()
-
             if (serverIp.isEmpty()) {
                 return@withContext Result.failure(ServerUnavailableException())
             }

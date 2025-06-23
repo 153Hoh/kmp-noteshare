@@ -15,10 +15,10 @@ import info.note.app.feature.image.usecase.IsCameraImageAvailableUseCase
 import info.note.app.feature.image.usecase.IsGalleryImageAvailableUseCase
 import info.note.app.feature.note.usecase.AddOrUpdateNoteUseCase
 import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
-import info.note.app.ui.add.NoteDetailsScreenViewModel
-import info.note.app.ui.add.model.NoteDetailsEffect
-import info.note.app.ui.add.model.NoteDetailsEvent
-import info.note.app.ui.add.model.NoteState
+import info.note.app.ui.details.NoteDetailsScreenViewModel
+import info.note.app.ui.details.model.NoteDetailsEffect
+import info.note.app.ui.details.model.NoteDetailsEvent
+import info.note.app.ui.details.model.NoteState
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

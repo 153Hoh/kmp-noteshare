@@ -26,7 +26,6 @@ class NoteScreenViewModel(
         viewModelScope.launch {
             fetchNotesUseCase().collect { result ->
                 if (result.isEmpty()) {
-                    _effect.emit(NoteEffect.ShowError("There are no notes yet!"))
                     _state.update { it.copy(isLoading = false, noteList = emptyList()) }
                 } else {
                     _state.update { it.copy(isLoading = false, noteList = result) }

@@ -32,7 +32,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import info.note.app.ui.add.NoteDetailsScreen
+import info.note.app.ui.details.NoteDetailsScreen
 import info.note.app.ui.note.NoteScreen
 import info.note.app.ui.settings.Settings
 import info.note.app.ui.theme.ThemeState

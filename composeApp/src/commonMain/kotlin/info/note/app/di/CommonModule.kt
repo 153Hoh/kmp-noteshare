@@ -15,7 +15,7 @@ import info.note.app.feature.note.usecase.DeleteAllNotesUseCase
 import info.note.app.feature.note.usecase.FetchNoteDetailsUseCase
 import info.note.app.feature.note.usecase.FetchNotesUseCase
 import info.note.app.feature.note.usecase.RemoveNoteUseCase
-import info.note.app.ui.add.NoteDetailsScreenViewModel
+import info.note.app.ui.details.NoteDetailsScreenViewModel
 import info.note.app.ui.note.NoteScreenViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel

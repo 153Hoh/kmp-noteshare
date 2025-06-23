@@ -1,18 +1,21 @@
 package info.note.app.server.routing
 
+import com.diamondedge.logging.logging
+import info.note.app.feature.file.usecase.CreateCheckFileIdsResponseUseCase
+import info.note.app.feature.file.usecase.FetchFileForDownloadUseCase
+import info.note.app.feature.file.usecase.HandleFileUploadUseCase
+import info.note.app.feature.note.usecase.SyncNotesUseCase
+import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
+import info.note.app.feature.preferences.usecase.HandleConnectUseCase
+import info.note.app.feature.preferences.usecase.SetLastSyncStateUseCase
 import info.note.app.feature.sync.model.CheckFilesRequestBody
 import info.note.app.feature.sync.model.ConnectResponseBody
 import info.note.app.feature.sync.model.SyncRequestBody
 import info.note.app.feature.sync.model.SyncResponseBody
 import info.note.app.feature.sync.model.UploadResponseBody
-import info.note.app.feature.file.usecase.CreateCheckFileIdsResponseUseCase
-import info.note.app.feature.file.usecase.FetchFileForDownloadUseCase
-import info.note.app.feature.preferences.usecase.FetchSyncKeyUseCase
-import info.note.app.feature.preferences.usecase.HandleConnectUseCase
-import info.note.app.feature.file.usecase.HandleFileUploadUseCase
-import info.note.app.feature.preferences.usecase.SetLastSyncStateUseCase
-import info.note.app.feature.note.usecase.ShouldSyncUseCase
-import info.note.app.feature.note.usecase.SyncNotesUseCase
+import info.note.app.feature.websocket.message.WebSocketMessage
+import info.note.app.server.websocket.usecase.FetchWebSocketMessagesToClientUseCase
+import info.note.app.server.websocket.usecase.HandleWebSocketMessageUseCase
 import io.ktor.http.ContentDisposition
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -24,17 +27,45 @@ import io.ktor.server.response.respondFile
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.Frame
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 
 class ServerRoutes(
     private val syncNotesUseCase: SyncNotesUseCase,
-    private val shouldSyncUseCase: ShouldSyncUseCase,
     private val setLastSyncStateUseCase: SetLastSyncStateUseCase,
     private val handleConnectUseCase: HandleConnectUseCase,
     private val fetchSyncKeyUseCase: FetchSyncKeyUseCase,
     private val createCheckFileIdsResponseUseCase: CreateCheckFileIdsResponseUseCase,
     private val handleFileUploadUseCase: HandleFileUploadUseCase,
-    private val fetchFileForDownloadUseCase: FetchFileForDownloadUseCase
+    private val fetchFileForDownloadUseCase: FetchFileForDownloadUseCase,
+    private val fetchWebSocketMessagesToClientUseCase: FetchWebSocketMessagesToClientUseCase,
+    private val handleWebSocketMessageUseCase: HandleWebSocketMessageUseCase
 ) {
+
+    fun websocket(routingRoute: Route): Route = routingRoute.apply {
+        webSocket("/ws") {
+            send(Frame.Text(WebSocketMessage.CONNECTED.name))
+
+            val sendToClientJob = launch {
+                fetchWebSocketMessagesToClientUseCase().collect {
+                    send(it)
+                }
+            }
+
+            runCatching {
+                incoming.consumeEach {
+                    handleWebSocketMessageUseCase(it)
+                }
+            }.onFailure {
+                logging().error { "WebSocket exception: ${it.message} ${closeReason.await()}" }
+                it.printStackTrace()
+            }.also {
+                sendToClientJob.cancel()
+            }
+        }
+    }
 
     fun syncRoutes(routingRoute: Route): Route = routingRoute.apply {
         post("/sync") {
@@ -116,21 +147,6 @@ class ServerRoutes(
 
             val mewSyncKey = handleConnectUseCase()
             call.respond(ConnectResponseBody(mewSyncKey))
-        }
-        get("/shouldSync") {
-            val syncKey = fetchSyncKeyUseCase()
-
-            if (call.request.headers[SYNC_KEY] != syncKey) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid Sync key")
-                return@get
-            }
-
-            if (shouldSyncUseCase()) {
-                call.response.headers.append(SYNC_KEY, syncKey)
-                call.respond(HttpStatusCode.OK)
-            } else {
-                call.respond(HttpStatusCode.BadRequest)
-            }
         }
     }
 

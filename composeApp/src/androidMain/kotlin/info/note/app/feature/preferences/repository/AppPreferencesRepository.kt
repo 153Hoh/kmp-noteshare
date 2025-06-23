@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import info.note.app.ui.theme.ThemeState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -62,7 +63,9 @@ class AppPreferencesRepository(
             .first()
 
     override fun getRawThemeState(): Flow<String> =
-        context.datastore.data.map { settings -> settings[stringPreferencesKey(THEME_STATE)] ?: "" }
+        context.datastore.data.map { settings ->
+            settings[stringPreferencesKey(THEME_STATE)] ?: ThemeState.AUTO.name
+        }
 
     override suspend fun setRawThemeState(rawThemeState: String) {
         context.datastore.edit { settings ->
