@@ -10,7 +10,7 @@ interface NoteRepository {
     suspend fun fetchNoteDetails(noteId: String): Result<NoteEntity>
 
     fun fetchNotes(): Flow<List<NoteEntity>>
-    suspend fun getAllNotes(): List<NoteEntity>
+    suspend fun getAllNotes(): Result<List<NoteEntity>>
 
     suspend fun refreshNotes(noteList: List<NoteEntity>): Result<Unit>
 

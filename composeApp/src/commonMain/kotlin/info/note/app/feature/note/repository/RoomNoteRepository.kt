@@ -38,16 +38,22 @@ class RoomNoteRepository(
         }
     }
 
-    override suspend fun fetchNoteDetails(noteId: String): Result<NoteEntity>  = withContext(Dispatchers.IO) {
-        runCatching {
-            dao.getNoteDetailsById(noteId)
+    override suspend fun fetchNoteDetails(noteId: String): Result<NoteEntity> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                dao.getNoteDetailsById(noteId)
+            }
         }
-    }
 
     override fun fetchNotes(): Flow<List<NoteEntity>> =
         dao.getAllNotesAsFlow()
 
-    override suspend fun getAllNotes(): List<NoteEntity> = dao.getAllNotes()
+    override suspend fun getAllNotes(): Result<List<NoteEntity>> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                dao.getAllNotes()
+            }
+        }
 
     override suspend fun refreshNotes(noteList: List<NoteEntity>): Result<Unit> =
         withContext(Dispatchers.IO) {

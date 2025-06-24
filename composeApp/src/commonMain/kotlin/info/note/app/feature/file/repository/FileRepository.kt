@@ -19,5 +19,7 @@ interface FileRepository {
 
     suspend fun removeFileById(fileId: String): Result<Unit>
 
+    suspend fun deleteNotUsedFiles(usedFileIdList: List<String>): Result<Unit>
+
     suspend fun deleteAllFiles(): Result<Unit>
 }

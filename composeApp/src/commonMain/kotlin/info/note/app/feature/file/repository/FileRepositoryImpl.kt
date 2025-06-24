@@ -48,6 +48,16 @@ class FileRepositoryImpl(
             }
         }
 
+    override suspend fun deleteNotUsedFiles(usedFileIdList: List<String>) =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                platform.filesDir
+                    .list()
+                    .filter { it.name.endsWith("-noteImage") && !usedFileIdList.contains(it.name) }
+                    .forEach { it.delete() }
+            }
+        }
+
     override suspend fun deleteAllFiles(): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
             platform.filesDir

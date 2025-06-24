@@ -1,6 +1,7 @@
 package info.note.app.server.routing
 
 import com.diamondedge.logging.logging
+import info.note.app.feature.file.usecase.CleanUpNotUsedFilesUseCase
 import info.note.app.feature.file.usecase.CreateCheckFileIdsResponseUseCase
 import info.note.app.feature.file.usecase.FetchFileForDownloadUseCase
 import info.note.app.feature.file.usecase.HandleFileUploadUseCase
@@ -41,7 +42,8 @@ class ServerRoutes(
     private val handleFileUploadUseCase: HandleFileUploadUseCase,
     private val fetchFileForDownloadUseCase: FetchFileForDownloadUseCase,
     private val fetchWebSocketMessagesToClientUseCase: FetchWebSocketMessagesToClientUseCase,
-    private val handleWebSocketMessageUseCase: HandleWebSocketMessageUseCase
+    private val handleWebSocketMessageUseCase: HandleWebSocketMessageUseCase,
+    private val cleanUpNotUsedFilesUseCase: CleanUpNotUsedFilesUseCase
 ) {
 
     fun websocket(routingRoute: Route): Route = routingRoute.apply {
@@ -98,6 +100,7 @@ class ServerRoutes(
             val requestBody = call.receive<CheckFilesRequestBody>()
 
             createCheckFileIdsResponseUseCase(requestBody.fileIds).onSuccess {
+                cleanUpNotUsedFilesUseCase()
                 call.response.headers.append(SYNC_KEY, syncKey)
                 call.respond(it)
             }.onFailure {

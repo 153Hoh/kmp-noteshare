@@ -9,12 +9,11 @@ class DeleteAllNotesUseCase(
 ) {
 
     suspend operator fun invoke() {
-        val notes = noteRepository.getAllNotes()
-
-        notes.forEach { note ->
-            noteRepository.removeNote(note.noteId)
+        noteRepository.getAllNotes().onSuccess { notes ->
+            notes.forEach { note ->
+                noteRepository.removeNote(note.noteId)
+            }
+            fileRepository.deleteAllFiles()
         }
-
-        fileRepository.deleteAllFiles()
     }
 }

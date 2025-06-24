@@ -3,6 +3,7 @@ package info.note.app.di
 import info.note.app.NoteAppViewModel
 import info.note.app.feature.file.repository.FileRepository
 import info.note.app.feature.file.repository.FileRepositoryImpl
+import info.note.app.feature.file.usecase.CleanUpNotUsedFilesUseCase
 import info.note.app.feature.file.usecase.FetchImageFromStorageUseCase
 import info.note.app.feature.image.usecase.FetchImageFromCameraUseCase
 import info.note.app.feature.image.usecase.FetchImageFromGalleryUseCase
@@ -30,23 +31,26 @@ val coreModule: Module
 
 fun commonModule() = module {
 
+    includes(commonUseCaseModule())
+
     single<NoteRepository> { RoomNoteRepository(get()) }
     single<FileRepository> { FileRepositoryImpl(get()) }
 
+    viewModel { NoteScreenViewModel(get(), get()) }
+    viewModel { NoteDetailsScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { NoteAppViewModel() }
+}
+
+fun commonUseCaseModule() = module {
     single { FetchNotesUseCase(get()) }
     single { AddOrUpdateNoteUseCase(get(), get()) }
     single { RemoveNoteUseCase(get(), get()) }
     single { FetchNoteDetailsUseCase(get()) }
     single { FetchImageFromStorageUseCase(get()) }
-
     single { DeleteAllNotesUseCase(get(), get()) }
-
+    single { CleanUpNotUsedFilesUseCase(get(), get()) }
     single { IsCameraImageAvailableUseCase(get()) }
     single { IsGalleryImageAvailableUseCase(get()) }
     single { FetchImageFromCameraUseCase(get()) }
     single { FetchImageFromGalleryUseCase(get()) }
-
-    viewModel { NoteScreenViewModel(get(), get()) }
-    viewModel { NoteDetailsScreenViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { NoteAppViewModel() }
 }

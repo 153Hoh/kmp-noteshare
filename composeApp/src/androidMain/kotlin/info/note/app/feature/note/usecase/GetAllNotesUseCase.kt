@@ -9,5 +9,8 @@ class GetAllNotesUseCase(
 ) {
 
     suspend operator fun invoke(): List<Note> =
-        noteRepository.getAllNotes().map { it.toNote() }
+        noteRepository.getAllNotes().fold(
+            onSuccess = { notes -> notes.map { it.toNote() } },
+            onFailure = { emptyList() }
+        )
 }

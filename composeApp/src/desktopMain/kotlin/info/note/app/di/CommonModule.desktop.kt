@@ -36,6 +36,9 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 actual fun platformModule() = module {
+
+    includes(desktopUseCaseModule())
+
     single<DatabaseBuilder> { RoomDatabaseBuilder() }
 
     single<Platform> { JVMPlatform() }
@@ -44,24 +47,9 @@ actual fun platformModule() = module {
 
     single<PreferencesRepository> { AppPreferencesRepository() }
 
-    single { SyncNotesUseCase(get(), get()) }
-    single { SetLastSyncStateUseCase(get()) }
-    single { FetchLastSyncStateUseCase(get()) }
-    single { HandleConnectUseCase(get()) }
-    single { FetchSyncKeyUseCase(get()) }
-    single { FetchDeviceIpUseCase() }
-    single { DisconnectSyncUseCase(get()) }
-    single { FetchLastSyncTimeUseCase(get()) }
-    single { CreateCheckFileIdsResponseUseCase(get()) }
-    single { FetchFileForDownloadUseCase(get()) }
-    single { HandleFileUploadUseCase(get()) }
-    single { FetchThemeStateUseCase(get()) }
-    single { SetThemeStateUseCase(get()) }
-    single { FetchWebSocketMessagesToClientUseCase(get()) }
-    single { HandleWebSocketMessageUseCase(get()) }
-
     single<ServerRoutes> {
         ServerRoutes(
+            get(),
             get(),
             get(),
             get(),
@@ -82,4 +70,22 @@ actual fun platformModule() = module {
     viewModel { SettingsScreenViewModel() }
     viewModel { SettingsHomeScreenViewModel(get(), get(), get()) }
     viewModel { MainViewModel(get(), get()) }
+}
+
+fun desktopUseCaseModule() = module {
+    single { SyncNotesUseCase(get(), get()) }
+    single { SetLastSyncStateUseCase(get()) }
+    single { FetchLastSyncStateUseCase(get()) }
+    single { HandleConnectUseCase(get()) }
+    single { FetchSyncKeyUseCase(get()) }
+    single { FetchDeviceIpUseCase() }
+    single { DisconnectSyncUseCase(get()) }
+    single { FetchLastSyncTimeUseCase(get()) }
+    single { CreateCheckFileIdsResponseUseCase(get()) }
+    single { FetchFileForDownloadUseCase(get()) }
+    single { HandleFileUploadUseCase(get()) }
+    single { FetchThemeStateUseCase(get()) }
+    single { SetThemeStateUseCase(get()) }
+    single { FetchWebSocketMessagesToClientUseCase(get()) }
+    single { HandleWebSocketMessageUseCase(get()) }
 }

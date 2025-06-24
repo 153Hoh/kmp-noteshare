@@ -40,6 +40,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 actual fun platformModule() = module {
+    includes(androidUseCaseModule())
     single<DatabaseBuilder> { RoomDatabaseBuilder(androidContext()) }
 
     single<ImagePickerRepository> { AndroidImagePickerRepository(androidContext()) }
@@ -48,10 +49,27 @@ actual fun platformModule() = module {
     single<Platform> { AndroidPlatform(androidContext()) }
 
     single<SyncRepository> { KtorSyncRepository() }
-    single<NoteSyncController> { NoteSyncControllerImpl(get(), get(), get(), get(), get(), get()) }
+    single<NoteSyncController> {
+        NoteSyncControllerImpl(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
     single<WebSocketMessageHandler> { WebSocketMessageHandlerImpl() }
     single<WebSocketController> { WebSocketControllerImpl(get()) }
 
+    viewModel { SettingsHomeScreenViewModel(get(), get(), get(), get()) }
+    viewModel { SyncWithPcViewModel(get(), get(), get()) }
+    viewModel { SettingsScreenViewModel() }
+    viewModel { MainActivityViewModel(get(), get()) }
+}
+
+fun androidUseCaseModule() = module {
     single { GetAllNotesUseCase(get()) }
     single { RefreshNotesUseCase(get()) }
     single { SaveSyncStateUseCase(get()) }
@@ -67,9 +85,4 @@ actual fun platformModule() = module {
     single { CheckAndConnectToServerUseCase(get(), get(), get()) }
     single { FetchSyncWebSocketMessagesFromServerUseCase(get()) }
     single { FetchSyncIpUseCase(get()) }
-
-    viewModel { SettingsHomeScreenViewModel(get(), get(), get(), get()) }
-    viewModel { SyncWithPcViewModel(get(), get(), get()) }
-    viewModel { SettingsScreenViewModel() }
-    viewModel { MainActivityViewModel(get(), get()) }
 }

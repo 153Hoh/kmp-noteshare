@@ -1,6 +1,7 @@
 package info.note.app.feature.sync.repository
 
 import com.diamondedge.logging.logging
+import info.note.app.feature.file.usecase.CleanUpNotUsedFilesUseCase
 import info.note.app.feature.note.usecase.GetAllNotesUseCase
 import info.note.app.feature.note.usecase.RefreshNotesUseCase
 import info.note.app.feature.preferences.usecase.SaveSyncStateUseCase
@@ -21,7 +22,8 @@ class NoteSyncControllerImpl(
     private val refreshNotesUseCase: RefreshNotesUseCase,
     private val saveSyncStateUseCase: SaveSyncStateUseCase,
     private val shouldSyncUseCase: ShouldSyncUseCase,
-    private val fetchSyncWebSocketMessagesFromServerUseCase: FetchSyncWebSocketMessagesFromServerUseCase
+    private val fetchSyncWebSocketMessagesFromServerUseCase: FetchSyncWebSocketMessagesFromServerUseCase,
+    private val cleanUpNotUsedFilesUseCase: CleanUpNotUsedFilesUseCase
 ) : NoteSyncController {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -51,6 +53,7 @@ class NoteSyncControllerImpl(
         val noteList = getAllNotesUseCase()
         syncNotesUseCase(noteList).onSuccess {
             logging().info { "Notes synced to the server!" }
+            cleanUpNotUsedFilesUseCase()
             refreshNotesUseCase(it)
             saveSyncStateUseCase(true)
         }.onFailure {
